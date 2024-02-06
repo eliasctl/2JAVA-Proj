@@ -2,13 +2,49 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-public class FenetreBtn1 {
-    public static void main(String[] arg) {
+public class FenetreBtn {
+    public static void main(String[] arg) {private void createAndShowGUI() {
+    // Si la fenêtre n'a pas encore été créée
+    if (frame == null) {
+        frame = new JFrame("Écran de Connexion");
+        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        frame.setSize(300, 200);
+        frame.setLayout(new GridLayout(3, 2));
+    }
+    else {
+        // Supprimer tous les composants de la fenêtre
+        frame.getContentPane().removeAll();
+        // Changer le titre de la fenêtre
+        frame.setTitle("Nouveau Titre");
+    }
+
+    // Créer les composants de la fenêtre
+    JLabel usernameLabel = new JLabel("Nom d'utilisateur:");
+    usernameField = new JTextField();
+    JLabel passwordLabel = new JLabel("Mot de passe:");
+    passwordField = new JPasswordField();
+    JButton loginButton = new JButton("Se Connecter");
+
+    // Ajouter les composants à la fenêtre
+    frame.add(usernameLabel);
+    frame.add(usernameField);
+    frame.add(passwordLabel);
+    frame.add(passwordField);
+    frame.add(loginButton);
+
+    // Rafraîchir l'affichage de la fenêtre avec les nouveaux composants
+    frame.validate();
+    frame.repaint();
+}
         /* Création des composants */
         JFrame frame = new JFrame("IStore");
         final JButton clic = new JButton("Cliquer"); // peut être suppr
         JPanel panel1 = new JPanel(); // peut être suppr
-        JLabel label = new JLabel("Hello World"); // Ajout d'un label initial
+        JLabel label = new JLabel("Hello World"); // Ajout d'un label initial 
+        JPanel centerPanel = new JPanel(new BorderLayout()); // Panel pour centrer les composants
+        // créer un contenaire choix entre Flow or grid
+        JPanel contenaire = new JPanel(new FlowLayout());
+
         /* Bar de menu */
         JMenuBar menuBar = new JMenuBar();
         /* différents menus */
@@ -25,8 +61,11 @@ public class FenetreBtn1 {
         clic.setEnabled(false); // peut être suppr
         panel1.add(clic); // peut être suppr
         frame.getContentPane().add(panel1, BorderLayout.SOUTH); // peut être suppr
-        frame.getContentPane().add(label, BorderLayout.CENTER); // Ajout du label au centre
-
+        
+        centerPanel.add(label, BorderLayout.NORTH); // Ajout du label au centre en haut
+        frame.getContentPane().add(centerPanel, BorderLayout.CENTER); // Ajout du panel central
+        frame.getContentPane().add(contenaire);
+        
         /* Ajouter les choix au menu */
         menu1.add(demarrer);
         menu1.add(fin);
@@ -62,7 +101,9 @@ public class FenetreBtn1 {
         /* Clic sur le choix Fin du menu fichier */
         fin.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                clic.setEnabled(false);
+                JLabel testText = new JLabel("Je suis une fleur");
+                contenaire.add(testText);
+                contenaire.setVisible(true);
             }
         });
 
