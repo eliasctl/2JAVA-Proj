@@ -4,7 +4,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public class api {
+public class APIelias {
     public static void main(String[] args) {
         try {
             // URL de l'API
