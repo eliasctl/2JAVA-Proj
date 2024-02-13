@@ -8,6 +8,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
+import javax.swing.JOptionPane;
+
 public class api {
     public static void testAPI() {
         try {
@@ -114,10 +116,23 @@ public class api {
             // Afficher la réponse de l'API
             System.out.println(response.toString());
 
+            // Afficher un message en fonction de la réponse de l'API
+            if (conn.getResponseCode() == 200) {
+                JOptionPane.showMessageDialog(null, "Inscription réussie", "Inscription", JOptionPane.INFORMATION_MESSAGE);
+            } else if (conn.getResponseCode() == 401) {
+                JOptionPane.showMessageDialog(null, "E-Mail déjà utilisé", "Erreur d'Inscription", JOptionPane.ERROR_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(null, "Erreur d'Inscription", "Erreur d'Inscription", JOptionPane.ERROR_MESSAGE);
+            }
+
             // Fermer la connexion
             conn.disconnect();
         } catch (IOException e) {
-            e.printStackTrace();
+            if (e.toString().contains("401")) {
+                JOptionPane.showMessageDialog(null, "Vous ne pouvez pas vous inscire \n avec cet e-mail", "Erreur d'Inscription", JOptionPane.ERROR_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(null, "Erreur d'Inscription, veuillez réessayer \n ou contacter un Administrateur", "Erreur d'Inscription", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
     

@@ -100,28 +100,31 @@ app.post('/test', (req, res) => {
 // Route pour l'enregistrement utilisateur
 app.post('/register', (req, res) => {
     const { email, pseudo, password } = req.body;
+    console.log("email : " + email + " pseudo : " + pseudo + " password : " + password)
+    res.status(401).json({ message: req.body.email});
+    
     const connection = mysql.createConnection(dbConfig);
 
     // select * from whitelist where email = email
-    connection.query('SELECT * FROM whitelist WHERE email = ?', [email], function (error, results, fields) {
-        if (error) {
-            res.status(500).json({ message: 'Internal server error' });
-        } else {
-            if (results.length === 0) {
-                res.status(401).json({ message: 'You are not allowed to register' });
-            } else {
-                // insert into users
-                connection.query('INSERT INTO users (email, username, password, role, store) VALUES (?, ?, ?, ?, ?)', [email, pseudo, password, 'result[0].role', 'result[0].store'], function (error, results, fields) {
-                    if (error) {
-                        res.status(500).json({ message: 'Internal server error' });
-                    } else {
-                        res.status(200).json({ message: 'User registered' });
-                    }
-                });
-            }
-        }
-        connection.end();
-    });
+    // connection.query('SELECT * FROM whitelist WHERE email = ?', [email], function (error, results, fields) {
+    //     if (error) {
+    //         res.status(500).json({ message: 'Internal server error!' });
+    //     } else {
+    //         if (results.length === 0) {
+    //             res.status(401).json({ message: 'You are not allowed to register' });
+    //         } else {
+    //             // insert into users
+    //             connection.query('INSERT INTO users (email, username, password, role, store) VALUES (?, ?, ?, ?, ?)', [email, pseudo, password, result[0].role, result[0].store], function (error, results, fields) {
+    //                 if (error) {
+    //                     res.status(500).json({ message: 'Internal server error' });
+    //                 } else {
+    //                     res.status(200).json({ message: 'User registered' });
+    //                 }
+    //             });
+    //         }
+    //     }
+    //     connection.end();
+    // });
 
 });
 

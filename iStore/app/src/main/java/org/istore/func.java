@@ -97,6 +97,8 @@ public class func {
                 // Hacher le mot de passe
                 String hashedPassword = BCrypt.hashpw(new String(password), "$2a$10$VM/GfVScMMgdLVtHwABv6u");
                 System.out.println("Hashed Password: " + hashedPassword);
+                new api().registerUser(eMail, pseudo, hashedPassword);
+                
             } else {
                 JOptionPane.showMessageDialog(null, "Les mots de passe ne correspondent pas", "Erreur d'Inscription",
                         JOptionPane.ERROR_MESSAGE);
