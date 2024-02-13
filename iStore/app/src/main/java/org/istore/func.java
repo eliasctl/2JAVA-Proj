@@ -1,8 +1,11 @@
 package org.istore;
+
 import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import org.mindrot.jbcrypt.BCrypt;
+
+
 
 public class func {
     public int roleToInt(String role) {
@@ -67,18 +70,20 @@ public class func {
 
     public void registration(Object frame) {
         JTextField eMailField = new JTextField(10);
+        JTextField pseudoField = new JTextField(10);
         JPasswordField passwordField = new JPasswordField(10);
         JPasswordField confirmPasswordField = new JPasswordField(10);
         passwordField.setEchoChar('●'); // Masque le texte saisi dans le champ de mot de passe
         confirmPasswordField.setEchoChar('●'); // Masque le texte saisi dans le champ de mot de passe
 
-        Object[] message = { "E-Mail:", eMailField, "Code:", passwordField, "Confirmer le code:",
+        Object[] message = { "E-Mail:", eMailField, "Pseudo:", pseudoField, "Code:", passwordField, "Confirmer le code:",
                 confirmPasswordField };
         int option = JOptionPane.showOptionDialog(null, message, "Inscription", JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE, null, new String[] { "Inscription", "Connexion" }, null);
         if (option == JOptionPane.OK_OPTION) {
 
             String eMail = eMailField.getText();
+            String pseudo = pseudoField.getText();
             char[] password = passwordField.getPassword();
             char[] confirmPassword = confirmPasswordField.getPassword();
 
@@ -90,7 +95,7 @@ public class func {
             // Vérifier si les mots de passe sont identiques
             if (new String(password).equals(new String(confirmPassword))) {
                 // Hacher le mot de passe
-                String hashedPassword = BCrypt.hashpw(new String(password), BCrypt.gensalt());
+                String hashedPassword = BCrypt.hashpw(new String(password), "$2a$10$VM/GfVScMMgdLVtHwABv6u");
                 System.out.println("Hashed Password: " + hashedPassword);
             } else {
                 JOptionPane.showMessageDialog(null, "Les mots de passe ne correspondent pas", "Erreur d'Inscription",

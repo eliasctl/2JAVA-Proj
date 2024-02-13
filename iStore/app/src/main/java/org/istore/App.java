@@ -97,6 +97,13 @@ public class App {
             }
         });
 
+        copier.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                // afficher le menu admin
+                new api().postQuery();
+            }
+        });
+
         coller.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 new api().testAPI();

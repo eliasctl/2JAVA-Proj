@@ -1,22 +1,42 @@
 import express from 'express';
+import bodyParser from 'body-parser';
 import mysql from 'mysql';
+
 const app = express()
-const port = 3001
+const port = 3002
 
-// const dbConfig = {
-//     host: 'eliascastel.ddns.net',
-//     user: 'proj',
-//     password: 'ne76uWF#8#',
-//     database: 'proj',
-// };
+const dbConfig = {
+    host: 'eliascastel.ddns.net',
+    user: 'java',
+    password: '!pn!XrZLgt-pn2RP',
+    database: '2java',
+};
 
+function verifyTokenAndPerms(token) {
+    return new Promise((resolve, reject) => {
+        const connection = mysql.createConnection(dbConfig);
+        connection.query('SELECT * FROM tokens WHERE token = ?', [token], function (error, results, fields) {
+            if (error) {
+                reject('Internal server error');
+            } else {
+                if (results.length === 0) {
+                    reject('Invalid token');
+                } else {
+                    resolve(results[0].user_id);
+                }
+            }
+            connection.end();
+        });
+    });
+};
+
+app.use(bodyParser.json());
+
+// Middleware pour gérer les CORS
 app.use(function (req, res, next) {
     res.setHeader('Access-Control-Allow-Origin', '*');
-    if (req.method === 'OPTIONS') {
-        res.setHeader('Access-Control-Allow-Methods', 'GET');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-        return res.status(200).json({});
-    }
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     next();
 });
 
@@ -24,32 +44,85 @@ app.get('/', (req, res) => {
     res.send('API 2JAVA IStore')
 })
 
+// Route pour la connexion utilisateur
 app.get('/login', (req, res) => {
-    const {username, password} = req.body;
+    const { username, password } = req.query;
     const connection = mysql.createConnection(dbConfig);
 
-    connection.connect();
-    //connection.query(`SELECT * FROM users WHERE username = '${username}' AND password = '${password}'`, function (error, results, fields) {
-        if (error) throw error;
-        if (results.length === 0) {
-            res.status(401).json({message: 'Invalid username or password'});
+    connection.query('SELECT * FROM users WHERE username = ? AND password = ?', [username, password], function (error, results, fields) {
+        if (error) {
+            res.status(500).json({ message: 'Internal server error' });
         } else {
-            res.status(200).json(results[0]);
+            if (results.length === 0) {
+                res.status(401).json({ message: 'Invalid username or password' });
+            } else {
+                // Générer un token
+                const token = Math.random().toString(36).substring(7);
+                connection.query('SELECT * FROM tokens WHERE token = ?', [token], function (error, results, fields) {
+                    if (error) {
+                        res.status(500).json({ message: 'Internal server error' });
+                    } else {
+                        if (results.length === 0) {
+                            connection.query('INSERT INTO tokens (id, token, role, store) VALUES (?, ?, ?, ?)', [results[0].id, token, results[0].role, results[0].store], function (error, results, fields) {
+                                if (error) {
+                                    res.status(500).json({ message: 'Internal server error' });
+                                } else {
+                                    res.status(200).json({ token });
+                                }
+                            });
+                        } else {
+                            res.status(500).json({ message: 'Internal server error' });
+                        }
+                    }
+                });
+                res.status(200).json(results[0]);
+            }
         }
+        connection.end();
     });
-    connection.end();
 });
 
+// Route pour tester les requêtes GET
+app.get('/test', (req, res) => {
+    const test = req.query;
+    console.log(test);
+    console.log('heu');
+    res.status(200).json({ message: 'ok' });
+});
+
+// Route pour tester les requêtes POST
+app.post('/test', (req, res) => {
+    const { username } = req.body;
+    console.log(username);
+    res.status(200).json({ message: 'ok : ' + username });
+});
+
+// Route pour l'enregistrement utilisateur
 app.post('/register', (req, res) => {
-    const {username, password} = req.body;
+    const { email, pseudo, password } = req.body;
     const connection = mysql.createConnection(dbConfig);
 
-    connection.connect();
-    //connection.query(`INSERT INTO users (username, password) VALUES ('${username}', '${password}')`, function (error, results, fields) {
-        if (error) throw error;
-        res.status(200).json({message: 'User created successfully'});
+    // select * from whitelist where email = email
+    connection.query('SELECT * FROM whitelist WHERE email = ?', [email], function (error, results, fields) {
+        if (error) {
+            res.status(500).json({ message: 'Internal server error' });
+        } else {
+            if (results.length === 0) {
+                res.status(401).json({ message: 'You are not allowed to register' });
+            } else {
+                // insert into users
+                connection.query('INSERT INTO users (email, username, password, role, store) VALUES (?, ?, ?, ?, ?)', [email, pseudo, password, 'result[0].role', 'result[0].store'], function (error, results, fields) {
+                    if (error) {
+                        res.status(500).json({ message: 'Internal server error' });
+                    } else {
+                        res.status(200).json({ message: 'User registered' });
+                    }
+                });
+            }
+        }
+        connection.end();
     });
-    connection.end();
+
 });
 
 app.listen(port, () => {
