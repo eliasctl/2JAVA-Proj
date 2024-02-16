@@ -1,6 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import mysql from 'mysql';
+import e from 'express';
 
 const app = express()
 const port = 3002
@@ -46,15 +47,15 @@ app.get('/', (req, res) => {
 
 // Route pour la connexion utilisateur
 app.get('/login', (req, res) => {
-    const { username, password } = req.query;
+    const { pseudo, password } = req.query;
     const connection = mysql.createConnection(dbConfig);
 
-    connection.query('SELECT * FROM users WHERE username = ? AND password = ?', [username, password], function (error, results, fields) {
+    connection.query('SELECT * FROM users WHERE pseudo = ? AND password = ?', [pseudo, password], function (error, resultsUser, fields) {
         if (error) {
             res.status(500).json({ message: 'Internal server error' });
         } else {
-            if (results.length === 0) {
-                res.status(401).json({ message: 'Invalid username or password' });
+            if (resultsUser.length === 0) {
+                res.status(401).json({ message: 'Invalid pseudo or password' });
             } else {
                 // Générer un token
                 const token = Math.random().toString(36).substring(7);
@@ -63,7 +64,7 @@ app.get('/login', (req, res) => {
                         res.status(500).json({ message: 'Internal server error' });
                     } else {
                         if (results.length === 0) {
-                            connection.query('INSERT INTO tokens (id, token, role, store) VALUES (?, ?, ?, ?)', [results[0].id, token, results[0].role, results[0].store], function (error, results, fields) {
+                            connection.query('INSERT INTO tokens (id, token, role, store) VALUES (?, ?, ?, ?)', [resultsUser[0].id, token, resultsUser[0].role, resultsUser[0].store], function (error, results, fields) {
                                 if (error) {
                                     res.status(500).json({ message: 'Internal server error' });
                                 } else {
@@ -101,30 +102,39 @@ app.post('/test', (req, res) => {
 app.post('/register', (req, res) => {
     const { email, pseudo, password } = req.body;
     console.log("email : " + email + " pseudo : " + pseudo + " password : " + password)
-    res.status(401).json({ message: req.body.email});
     
     const connection = mysql.createConnection(dbConfig);
 
-    // select * from whitelist where email = email
-    // connection.query('SELECT * FROM whitelist WHERE email = ?', [email], function (error, results, fields) {
-    //     if (error) {
-    //         res.status(500).json({ message: 'Internal server error!' });
-    //     } else {
-    //         if (results.length === 0) {
-    //             res.status(401).json({ message: 'You are not allowed to register' });
-    //         } else {
-    //             // insert into users
-    //             connection.query('INSERT INTO users (email, username, password, role, store) VALUES (?, ?, ?, ?, ?)', [email, pseudo, password, result[0].role, result[0].store], function (error, results, fields) {
-    //                 if (error) {
-    //                     res.status(500).json({ message: 'Internal server error' });
-    //                 } else {
-    //                     res.status(200).json({ message: 'User registered' });
-    //                 }
-    //             });
-    //         }
-    //     }
-    //     connection.end();
-    // });
+    connection.query('SELECT * FROM whitelist WHERE email = ?', [email], function (error, resultsWhitelist, fields) {
+        if (error) {
+            console.log(error);
+            res.status(500).json({ message: 'Internal server error!' });
+        } else {
+            if (resultsWhitelist.length === 0) {
+                res.status(401).json({ message: 'You are not allowed to register' });
+            } else {
+                connection.query('SELECT * FROM users WHERE email = ?', [email], function (error, results, fields) {
+                    if (error) {
+                        res.status(500).json({ message: 'Internal server error' });
+                    } else {
+                        if (results.length > 0) {
+                            res.status(401).json({ message: 'Email already used' });
+                        }
+                        else {
+                            connection.query('INSERT INTO users (email, pseudo, password, role, store) VALUES (?, ?, ?, ?, ?)', [email, pseudo, password, resultsWhitelist[0].role, resultsWhitelist[0].store], function (error, results, fields) {
+                                if (error) {
+                                    res.status(500).json({ message: 'Internal server error' });
+                                } else {
+                                    res.status(200).json({ message: 'User registered' });
+                                }
+                                connection.end();
+                            });
+                        }
+                    }
+                });
+            }
+        }
+    });
 
 });
 

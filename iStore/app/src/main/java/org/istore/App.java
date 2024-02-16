@@ -53,7 +53,8 @@ public class App {
         /* Ajouter la bar du menu à la frame */
         frame.setJMenuBar(menuBar);
         /* Cacher le menu */
-        menuBar.setVisible(true);
+        menuAdmin.setVisible(false);
+        menuBar.setVisible(false);
 
         /* Ajouter un bouton de connexion qui appel la fonction de connexion */
         JButton connectionButton = new JButton("Connexion");
@@ -73,13 +74,13 @@ public class App {
         });*/
 
         /* Ajouter un bouton d'inscription qui appel la fonction d'inscription' */
-        /*JButton registrationButton = new JButton("Inscription");
+        JButton registrationButton = new JButton("Inscription");
         container.add(registrationButton);
         registrationButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 new func().registration(frame);
             }
-        });*/
+        });
 
         fin.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
