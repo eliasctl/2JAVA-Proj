@@ -25,6 +25,9 @@ dependencies {
     // This dependency is used by the application.
     implementation(libs.guava)
     implementation("org.mindrot:jbcrypt:0.4")
+    implementation("mysql:mysql-connector-java:8.0.26")
+    implementation("org.json:json:20210307")
+
 }
 
 // Apply a specific Java toolchain to ease working on different environments.

@@ -5,6 +5,14 @@ import java.awt.*;
 import java.awt.event.*;
 
 public class App {
+
+    // stocker les informations de l'utilisateur connecté
+    public static String id = "";
+    public static String pseudo = "";
+    public static String eMail = "";
+    public static String role = "";
+    public static String[][] store = new String[0][0];
+
     public String getGreeting() {
         return "Welcome on the iStore";
     }
@@ -41,6 +49,8 @@ public class App {
         menu2.add(coller);
         /* Ajouter le menu2 à la bar du menu */
         menuBar.add(menu2);
+        /* Créer le menu */
+
         /* Ajouter le menuAdmin */
         JMenu menuAdmin = new JMenu("Administration");
         /* Ajouter les composants du menuAdmin */
@@ -53,6 +63,7 @@ public class App {
         /* Ajouter la bar du menu à la frame */
         frame.setJMenuBar(menuBar);
         /* Cacher le menu */
+        menuAdmin.setName("menuAdmin");
         menuAdmin.setVisible(false);
         menuBar.setVisible(false);
 
@@ -64,14 +75,6 @@ public class App {
                 new func().connection(frame);
             }
         });
-
-        /*JButton connectionButton = new JButton("Connexion");
-        container.add(connectionButton);
-        connectionButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                new func().intToRole(1);
-            }
-        });*/
 
         /* Ajouter un bouton d'inscription qui appel la fonction d'inscription' */
         JButton registrationButton = new JButton("Inscription");
@@ -95,19 +98,6 @@ public class App {
             public void actionPerformed(ActionEvent e) {
                 // cacher le menu admin
                 menuAdmin.setVisible(false);
-            }
-        });
-
-        copier.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                // afficher le menu admin
-                new api().postQuery();
-            }
-        });
-
-        coller.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                new api().testAPI();
             }
         });
 

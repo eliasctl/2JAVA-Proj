@@ -9,6 +9,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.sql.*;
 
 import javax.swing.JOptionPane;
 
@@ -142,7 +143,7 @@ public class api {
         }
     }
 
-    public void loginUser(String pseudo, String password) {
+    public void loginUser(Object frame, String pseudo, String password) {
         try {
             // Créer l'URL de l'API
             URL url = new URI("http", null, "localhost", 3002, "/login", null, null).toURL();
@@ -151,10 +152,10 @@ public class api {
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
             // Spécifier la méthode de requête
-            conn.setRequestMethod("POST");
+            conn.setRequestMethod("GET");
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setDoOutput(true);
-
+            
             // Créer la chaîne JSON des données à envoyer
             String jsonInputString = "{\"pseudo\": \"" + pseudo + "\", \"password\": \"" + password + "\"}";
 
@@ -179,6 +180,9 @@ public class api {
             // Afficher un message en fonction de la réponse de l'API
             if (conn.getResponseCode() == 200) {
                 JOptionPane.showMessageDialog(null, "Connexion réussie", "Connexion", JOptionPane.INFORMATION_MESSAGE);
+                ((javax.swing.JFrame) frame).getJMenuBar().setVisible(true);
+                ((javax.swing.JFrame) frame).getContentPane().remove(0);
+                ((javax.swing.JFrame) frame).revalidate();
             } else {
                 JOptionPane.showMessageDialog(null, "Erreur de Connexion, veuillez réessayer \\n" + //
                         " ou contacter un Administrateur", "Erreur de Connexion", JOptionPane.ERROR_MESSAGE);
@@ -187,9 +191,14 @@ public class api {
             // Fermer la connexion
             conn.disconnect();
         } catch (IOException | URISyntaxException e) {
-            JOptionPane.showMessageDialog(null, "Erreur de Connexion, veuillez réessayer \\n" + //
-                    " ou contacter un Administrateur", "Erreur de Connexion", JOptionPane.ERROR_MESSAGE);
+            if (e.toString().contains("401")) {
+                JOptionPane.showMessageDialog(null, "Pseudo ou Mot de passe incorrect", "Erreur de Connexion",
+                        JOptionPane.ERROR_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(null,
+                        "Erreur de Connexion, veuillez réessayer \n ou contacter un Administrateur",
+                        "Erreur de Connexion", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
-
 }

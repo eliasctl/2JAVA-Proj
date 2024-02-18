@@ -45,59 +45,6 @@ app.get('/', (req, res) => {
     res.send('API 2JAVA IStore')
 })
 
-// Route pour la connexion utilisateur
-app.get('/login', (req, res) => {
-    const { pseudo, password } = req.query;
-    const connection = mysql.createConnection(dbConfig);
-
-    connection.query('SELECT * FROM users WHERE pseudo = ? AND password = ?', [pseudo, password], function (error, resultsUser, fields) {
-        if (error) {
-            res.status(500).json({ message: 'Internal server error' });
-        } else {
-            if (resultsUser.length === 0) {
-                res.status(401).json({ message: 'Invalid pseudo or password' });
-            } else {
-                // Générer un token
-                const token = Math.random().toString(36).substring(7);
-                connection.query('SELECT * FROM tokens WHERE token = ?', [token], function (error, results, fields) {
-                    if (error) {
-                        res.status(500).json({ message: 'Internal server error' });
-                    } else {
-                        if (results.length === 0) {
-                            connection.query('INSERT INTO tokens (id, token, role, store) VALUES (?, ?, ?, ?)', [resultsUser[0].id, token, resultsUser[0].role, resultsUser[0].store], function (error, results, fields) {
-                                if (error) {
-                                    res.status(500).json({ message: 'Internal server error' });
-                                } else {
-                                    res.status(200).json({ token });
-                                }
-                            });
-                        } else {
-                            res.status(500).json({ message: 'Internal server error' });
-                        }
-                    }
-                });
-                res.status(200).json(results[0]);
-            }
-        }
-        connection.end();
-    });
-});
-
-// Route pour tester les requêtes GET
-app.get('/test', (req, res) => {
-    const test = req.query;
-    console.log(test);
-    console.log('heu');
-    res.status(200).json({ message: 'ok' });
-});
-
-// Route pour tester les requêtes POST
-app.post('/test', (req, res) => {
-    const { username } = req.body;
-    console.log(username);
-    res.status(200).json({ message: 'ok : ' + username });
-});
-
 // Route pour l'enregistrement utilisateur
 app.post('/register', (req, res) => {
     const { email, pseudo, password } = req.body;
@@ -136,6 +83,46 @@ app.post('/register', (req, res) => {
         }
     });
 
+});
+
+// Route pour la connexion utilisateur
+app.get('/login', (req, res) => {
+    const { pseudo, password } = req.body;
+    console.log("pseudo : " + pseudo + " password : " + password);
+    res.status(200).json({ message: 'User connected' });
+    const connection = mysql.createConnection(dbConfig);
+
+    connection.query('SELECT * FROM users WHERE pseudo = ? AND password = ?', [pseudo, password], function (error, resultsUser, fields) {
+        if (error) {
+            res.status(500).json({ message: 'Internal server error' });
+        } else {
+            if (resultsUser.length === 0) {
+                res.status(401).json({ message: 'Invalid pseudo or password' });
+            } else {
+                // Générer un token
+                const token = Math.random().toString(36).substring(7);
+                connection.query('SELECT * FROM tokens WHERE token = ?', [token], function (error, results, fields) {
+                    if (error) {
+                        res.status(500).json({ message: 'Internal server error' });
+                    } else {
+                        if (results.length === 0) {
+                            connection.query('INSERT INTO tokens (id, token, role, store) VALUES (?, ?, ?, ?)', [resultsUser[0].id, token, resultsUser[0].role, resultsUser[0].store], function (error, results, fields) {
+                                if (error) {
+                                    res.status(500).json({ message: 'Internal server error' });
+                                } else {
+                                    res.status(200).json({ token });
+                                }
+                            });
+                        } else {
+                            res.status(500).json({ message: 'Internal server error' });
+                        }
+                    }
+                });
+                res.status(200).json(results[0]);
+            }
+        }
+        connection.end();
+    });
 });
 
 app.listen(port, () => {
