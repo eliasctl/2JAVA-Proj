@@ -16,7 +16,16 @@ import javax.swing.JComboBox;
 import java.awt.*;
 import java.awt.event.*;
 
+/**
+ * Classe Admin
+ * - Permet de gérer les magasins, les inventaires et la whitelist
+ */
 public class Admin {
+
+    /**
+     * Méthode pour gérer les magasins
+     * @param frame
+     */
     public void storeList(Object frame) {
         User.page = "storeList";
         try (Connection conn = DriverManager.getConnection(Conf.DB_URL, Conf.DB_USER, Conf.DB_PASSWORD)) {
@@ -67,6 +76,10 @@ public class Admin {
         }
     }
 
+    /**
+     * Méthode pour sélectionner une action pour un magasin
+     * @param frame
+     */
     private void selectActionStore(Object frame) {
         String[] options = { "Ajouter", "Modifier", "Supprimer" };
         int response = JOptionPane.showOptionDialog(null, "Que voulez-vous faire ?", "Action sur le magasin",
@@ -86,6 +99,10 @@ public class Admin {
         }
     }
 
+    /**
+     * Méthode pour ajouter un magasin
+     * @param frame
+     */
     private void addStore(Object frame) {
         JTextField name = new JTextField(10);
         Object[] message = { "Nom du magasin:", name };
@@ -121,6 +138,10 @@ public class Admin {
         }
     }
 
+    /**
+     * Méthode pour modifier un magasin
+     * @param frame
+     */
     private void modifyStore(Object frame) {
         try (Connection conn = DriverManager.getConnection(Conf.DB_URL, Conf.DB_USER, Conf.DB_PASSWORD)) {
             String sqlSelect = "SELECT * FROM store";
@@ -182,6 +203,10 @@ public class Admin {
         }
     }
 
+    /**
+     * Méthode pour supprimer un magasin
+     * @param frame
+     */
     private void deleteStore(Object frame) {
         try (Connection conn = DriverManager.getConnection(Conf.DB_URL, Conf.DB_USER, Conf.DB_PASSWORD)) {
             String sqlSelect = "SELECT * FROM store";
@@ -234,6 +259,10 @@ public class Admin {
         }
     }
 
+    /**
+     * Méthode pour gérer la whitelist
+     * @param frame
+     */
     public void whitelistList(Object frame) {
         User.page = "whitelistList";
         try (Connection conn = DriverManager.getConnection(Conf.DB_URL, Conf.DB_USER, Conf.DB_PASSWORD)) {
@@ -287,6 +316,10 @@ public class Admin {
         }
     }
 
+    /**
+     * Méthode pour sélectionner une action pour la whitelist
+     * @param frame
+     */
     private void selectActionWhitelist(Object frame) {
         String[] options = { "Ajouter", "Supprimer" };
         int response = JOptionPane.showOptionDialog(null, "Que voulez-vous faire ?", "Action sur la liste blanche",
@@ -303,6 +336,10 @@ public class Admin {
         }
     }
 
+    /**
+     * Méthode pour supprimer un utilisateur de la whitelist
+     * @param frame
+     */
     private void deleteWhitelist(Object frame) {
         try (Connection conn = DriverManager.getConnection(Conf.DB_URL, Conf.DB_USER, Conf.DB_PASSWORD)) {
             String sqlSelect = "SELECT * FROM whitelist";
@@ -357,6 +394,10 @@ public class Admin {
         }
     }
 
+    /**
+     * Méthode pour gérer les inventaires
+     * @param frame
+     */
     public void inventoryList(Object frame) {
         User.page = "inventoryList";
         try (Connection conn = DriverManager.getConnection(Conf.DB_URL, Conf.DB_USER, Conf.DB_PASSWORD)) {
@@ -423,6 +464,10 @@ public class Admin {
         }
     }
 
+    /**
+     * Méthode pour supprimer un inventaire
+     * @param frame
+     */
     private void deleteInventory(Object frame) {
         try (Connection conn = DriverManager.getConnection(Conf.DB_URL, Conf.DB_USER, Conf.DB_PASSWORD)) {
             String sqlSelect = "SELECT * FROM store WHERE id IN (SELECT DISTINCT inventory FROM items)";

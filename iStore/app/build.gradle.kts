@@ -16,6 +16,21 @@ repositories {
     mavenCentral()
 }
 
+tasks.withType<Javadoc> {
+    // Répertoire de destination pour la documentation générée
+    destinationDir = file("$buildDir/docs/javadoc")
+}
+
+// Tâche pour générer la documentation Javadoc
+val generateJavadoc by tasks.registering(Javadoc::class) {
+    source(sourceSets["main"].allJava)
+    classpath = sourceSets["main"].compileClasspath
+}
+
+tasks.named("build") {
+    dependsOn(generateJavadoc)
+}
+
 dependencies {
     // Use JUnit Jupiter for testing.
     testImplementation(libs.junit.jupiter)

@@ -7,14 +7,36 @@ import java.sql.SQLException;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
+/**
+ * Conf
+ * Classe pour la configuration de la base de données
+ */
 public class Conf {
     // prompt au lancement de l'application pour demander quelle base de données utiliser
+    /**
+     * prompt au lancement de l'application pour demander quelle base de données utiliser
+     */
     public static String[] prompt = { "Choisir une base de données", "Serveur", "Autre"};
+    /**
+     * db Base de données à utiliser
+     */
     public static String db = prompt[1];
     // Constantes de connexion à la base de données
+    /**
+     * DB_URL URL de la base de données
+     */
     public static String DB_URL = "";
+    /**
+     * DB_USER Utilisateur de la base de données
+     */
     public static String DB_USER = "";
+    /**
+     * DB_PASSWORD Mot de passe de la base de données
+     */
     public static String DB_PASSWORD = "";
+    /**
+     * selectTataBase Méthode pour sélectionner la base de données à utiliser
+     */
     public void selectTataBase() {
         // prompt au lancement de l'application pour demander quelle base de données utiliser
         db = (String) JOptionPane.showInputDialog(null, "Choisir une base de données", "Base de données",

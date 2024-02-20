@@ -8,7 +8,16 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Store
+ * Classe pour la gestion des magasins
+ */
 public class Store {
+    /**
+     * selectStore
+     * Méthode pour sélectionner un magasin
+     * @param frame
+     */
     public void selectStore(Object frame) {
         if ("ADMIN".equals(User.role)) {
             // faire une liste des magasins pour une liste déroulante et l'id du sélect =
@@ -49,6 +58,11 @@ public class Store {
         }
     }
 
+    /**
+     * verifyStore
+     * Méthode pour vérifier si un magasin est attribué à l'utilisateur
+     * @param frame
+     */
     private void verifyStore(Object frame) {
         if (User.store == null || User.store == 0) {
             if ("ADMIN".equals(User.role)) {
@@ -61,6 +75,11 @@ public class Store {
         }
     }
 
+    /**
+     * userStore
+     * Méthode pour afficher le personnel d'un magasin
+     * @param frame
+     */
     public void userStore(Object frame) {
         User.page = "userStore";
         verifyStore(frame);
@@ -117,6 +136,11 @@ public class Store {
         }
     }
 
+    /**
+     * itemList
+     * Méthode pour afficher l'inventaire d'un magasin
+     * @param frame
+     */
     public void itemList(Object frame) {
         User.page = "itemList";
         verifyStore(frame);
@@ -180,6 +204,11 @@ public class Store {
         }
     }
 
+    /**
+     * selectActionItem
+     * Méthode pour sélectionner une action à effectuer sur un article
+     * @param frame
+     */
     private void selectActionItem(Object frame) {
         if (!"EMPLOYEE".equals(User.role)) {
             String[] options = { "Ajouter un article", "Modifier un article (nom et prix)", "Modifier le stock",
@@ -210,6 +239,11 @@ public class Store {
         }
     }
 
+    /**
+     * addItem
+     * Méthode pour ajouter un article
+     * @param frame
+     */
     private void addItem(Object frame) {
         JTextField name = new JTextField(10);
         JTextField price = new JTextField(10);
@@ -259,6 +293,11 @@ public class Store {
         }
     }
 
+    /**
+     * updateItem
+     * Méthode pour modifier un article
+     * @param frame
+     */
     private void updateItem(Object frame) {
         try (Connection conn = DriverManager.getConnection(Conf.DB_URL, Conf.DB_USER, Conf.DB_PASSWORD)) {
             String sql = "SELECT * FROM items WHERE inventory = ?";
@@ -315,6 +354,11 @@ public class Store {
         }
     }
 
+    /**
+     * updateStock
+     * Méthode pour modifier le stock d'un article
+     * @param frame
+     */
     private void updateStock(Object frame) {
         try (Connection conn = DriverManager.getConnection(Conf.DB_URL, Conf.DB_USER, Conf.DB_PASSWORD)) {
             String sql = "SELECT * FROM items WHERE inventory = ?";
@@ -366,6 +410,11 @@ public class Store {
         }
     }
 
+    /**
+     * deleteItem
+     * Méthode pour supprimer un article
+     * @param frame
+     */
     public void deleteItem(Object frame) {
         try (Connection conn = DriverManager.getConnection(Conf.DB_URL, Conf.DB_USER, Conf.DB_PASSWORD)) {
             String sql = "SELECT * FROM items WHERE inventory = ?";

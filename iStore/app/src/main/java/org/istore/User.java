@@ -13,15 +13,42 @@ import java.awt.event.*;
 
 import org.mindrot.jbcrypt.BCrypt;
 
+/**
+ * User
+ * Classe pour la gestion des utilisateurs
+ */
 public class User {
     // stocker les informations de l'utilisateur connecté
+    /**
+     * id Identifiant de l'utilisateur connecté
+     */
     public static String id = "";
+    /**
+     * pseudo Pseudo de l'utilisateur connecté
+     */
     public static String pseudo = "";
+    /**
+     * eMail E-Mail de l'utilisateur connecté
+     */
     public static String eMail = "";
+    /**
+     * role Rôle de l'utilisateur connecté
+     */
     public static String role = "";
+    /**
+     * page Page actuelle de l'utilisateur connecté
+     */
     public static String page = "";
+    /**
+     * store Magasin de l'utilisateur connecté
+     */
     public static Integer store = null;
 
+    /**
+     * connection
+     * Méthode pour la connexion d'un utilisateur
+     * @param frame
+     */
     public void connection(Object frame) {
         // Créer les champs de saisie pour l'email et le mot de passe
         JTextField eMailField = new JTextField(10);
@@ -98,6 +125,11 @@ public class User {
         }
     }
 
+    /**
+     * registration
+     * Méthode pour l'inscription d'un utilisateur
+     * @param frame
+     */
     public void registration(Object frame) {
         JTextField eMailField = new JTextField(10);
         JTextField pseudoField = new JTextField(10);
@@ -212,6 +244,11 @@ public class User {
         }
     }
 
+    /**
+     * disconnection
+     * Méthode pour la déconnexion d'un utilisateur
+     * @param frame
+     */
     public void disconnection(Object frame) {
         // Réinitialiser les informations de l'utilisateur connecté
         User.id = "";
@@ -252,6 +289,11 @@ public class User {
         ((javax.swing.JFrame) frame).revalidate();
     }
 
+    /**
+     * profile
+     * Méthode pour afficher le profil de l'utilisateur connecté
+     * @param frame
+     */
     public void userList(Object frame) {
         User.page = "userList";
         try (Connection conn = DriverManager.getConnection(Conf.DB_URL, Conf.DB_USER, Conf.DB_PASSWORD)) {
@@ -318,6 +360,11 @@ public class User {
         }
     }
 
+    /**
+     * selectActionUser
+     * Méthode pour sélectionner une action à effectuer pour un utilisateur
+     * @param frame
+     */
     private void selectActionUser(Object frame) {
         String[] options = { "Ajouter", "Modifier", "Supprimer" };
         int response = JOptionPane.showOptionDialog(null, "Que voulez-vous faire ?", "Action pour un utilisateur",
@@ -337,6 +384,11 @@ public class User {
         }
     }
 
+    /**
+     * addUser
+     * Méthode pour ajouter un utilisateur
+     * @param frame
+     */
     public void addUser(Object frame) {
         try (Connection conn = DriverManager.getConnection(Conf.DB_URL, Conf.DB_USER, Conf.DB_PASSWORD)) {
             String sqlSelect = "SELECT * FROM store";
@@ -490,6 +542,11 @@ public class User {
         }
     }
 
+    /**
+     * editUser
+     * Méthode pour modifier un utilisateur
+     * @param frame
+     */
     private void editUser(Object frame) {
         try (Connection conn = DriverManager.getConnection(Conf.DB_URL, Conf.DB_USER, Conf.DB_PASSWORD)) {
             String sql = "SELECT * FROM users";
@@ -843,6 +900,11 @@ public class User {
         }
     }
 
+    /**
+     * deleteUser
+     * Méthode pour supprimer un utilisateur
+     * @param frame
+     */
     private void deleteUser(Object frame) {
         try (Connection conn = DriverManager.getConnection(Conf.DB_URL, Conf.DB_USER, Conf.DB_PASSWORD)) {
             String sql = "SELECT * FROM users";
@@ -918,6 +980,11 @@ public class User {
         }
     }
 
+    /**
+     * profile
+     * Méthode pour afficher le profil de l'utilisateur connecté
+     * @param frame
+     */
     public void profile(Object frame) {
         try (Connection conn = DriverManager.getConnection(Conf.DB_URL, Conf.DB_USER, Conf.DB_PASSWORD)) {
             String sql = "SELECT * FROM users WHERE id = ?";

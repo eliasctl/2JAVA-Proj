@@ -4,12 +4,26 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
+/**
+ * Main
+ * Classe principale de l'application
+ */
 public class Main {
 
+    /**
+     * getGreeting
+     * Méthode pour vérifier si l'application fonctionne
+     * @return String
+     */
     public String getGreeting() {
         return "Welcome on the iStore";
     }
 
+    /**
+     * main
+     * Méthode principale de l'application
+     * @param arg
+     */
     public static void main(String[] arg) {
         JFrame frame = new JFrame("IStore");
 
