@@ -39,10 +39,5 @@ java {
 
 application {
     // Define the main class for the application.
-    mainClass = "org.istore.App"
-}
-
-tasks.named<Test>("test") {
-    // Use JUnit Platform for unit tests.
-    useJUnitPlatform()
+    mainClass = "org.istore.Main"
 }

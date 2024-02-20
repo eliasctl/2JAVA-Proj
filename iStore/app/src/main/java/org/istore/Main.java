@@ -4,14 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-public class App {
-
-    // stocker les informations de l'utilisateur connecté
-    public static String id = "";
-    public static String pseudo = "";
-    public static String eMail = "";
-    public static String role = "";
-    public static String[][] store = new String[0][0];
+public class Main {
 
     public String getGreeting() {
         return "Welcome on the iStore";
@@ -27,43 +20,43 @@ public class App {
 
         /* Bar de menu */
         JMenuBar menuBar = new JMenuBar();
+
         /* Créer le menu1 */
-        JMenu menu1 = new JMenu("Fichier");
+        JMenu menu1 = new JMenu("Magasin");
         /* Ajouter les composants du menu1 */
         JMenuItem demarrer = new JMenuItem("Démarrer");
         menu1.add(demarrer);
         JMenuItem fin = new JMenuItem("Fin");
         menu1.add(fin);
-        JMenuItem connexion = new JMenuItem("Connexion");
+        JMenuItem connexion = new JMenuItem("Personnel du magasin");
         menu1.add(connexion);
         /* Ajouer le menu1 à la bar du menu */
         menuBar.add(menu1);
-        /* Créer le menu2 */
-        JMenu menu2 = new JMenu("Edition");
-        /* Ajouter les composants du menu2 */
-        JMenuItem annuler = new JMenuItem("Annuler");
-        menu2.add(annuler);
-        JMenuItem copier = new JMenuItem("Copier");
-        menu2.add(copier);
-        JMenuItem coller = new JMenuItem("Coller");
-        menu2.add(coller);
-        /* Ajouter le menu2 à la bar du menu */
-        menuBar.add(menu2);
-        /* Créer le menu */
+
+        /* Créer le menu User */
+        JMenu menuUser = new JMenu("Utilisateur");
+        /* Ajouter les composants du menuUser */
+        JMenuItem profile = new JMenuItem("Mon Profil");
+        menuUser.add(profile);
+        JMenuItem users = new JMenuItem("Liste des Utilisateurs");
+        menuUser.add(users);
+        JMenuItem disconnection = new JMenuItem("Deconnexion");
+        menuUser.add(disconnection);
+        /* Ajouter le menuUser à la bar du menu */
+        menuBar.add(menuUser);
 
         /* Ajouter le menuAdmin */
         JMenu menuAdmin = new JMenu("Administration");
         /* Ajouter les composants du menuAdmin */
-        JMenuItem userList = new JMenuItem("Liste des Utilisateurs");
-        menuAdmin.add(userList);
-        JMenuItem shopList = new JMenuItem("Liste des Magasins");
-        menuAdmin.add(shopList);
+        JMenuItem whitelistList = new JMenuItem("Liste des Whitelists");
+        menuAdmin.add(whitelistList);
+        JMenuItem storeList = new JMenuItem("Liste des Magasins");
+        menuAdmin.add(storeList);
         /* Ajouter le menuAdmin à la bar du menu */
         menuBar.add(menuAdmin);
         /* Ajouter la bar du menu à la frame */
         frame.setJMenuBar(menuBar);
         /* Cacher le menu */
-        menuAdmin.setName("menuAdmin");
         menuAdmin.setVisible(false);
         menuBar.setVisible(false);
 
@@ -72,7 +65,7 @@ public class App {
         container.add(connectionButton);
         connectionButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                new func().connection(frame);
+                new User().connection(frame);
             }
         });
 
@@ -81,7 +74,25 @@ public class App {
         container.add(registrationButton);
         registrationButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                new func().registration(frame);
+                new User().registration(frame);
+            }
+        });
+
+        profile.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                //new User().profile(frame);
+            }
+        });
+
+        disconnection.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                new User().disconnection(frame);
+            }
+        });
+
+        users.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                new User().userList(frame);
             }
         });
 
@@ -94,10 +105,15 @@ public class App {
             }
         });
 
-        annuler.addActionListener(new ActionListener() {
+        whitelistList.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                // cacher le menu admin
-                menuAdmin.setVisible(false);
+                new Admin().whitelistList(frame);
+            }
+        });
+
+        storeList.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                new Admin().storeList(frame);
             }
         });
 
@@ -105,7 +121,8 @@ public class App {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
 
-        // Cliquer sur le bouton de connexion 
+        // Cliquer sur le bouton de connexion
+        new Conf().selectTataBase();
         connectionButton.doClick();
     }
 }
