@@ -21,17 +21,15 @@ public class Main {
         /* Bar de menu */
         JMenuBar menuBar = new JMenuBar();
 
-        /* Créer le menu1 */
-        JMenu menu1 = new JMenu("Magasin");
-        /* Ajouter les composants du menu1 */
-        JMenuItem demarrer = new JMenuItem("Démarrer");
-        menu1.add(demarrer);
-        JMenuItem fin = new JMenuItem("Fin");
-        menu1.add(fin);
+        /* Créer le menuStore */
+        JMenu menuStore = new JMenu("Magasin");
+        /* Ajouter les composants du menuStore */
+        JMenuItem itemList = new JMenuItem("Inventaire");
+        menuStore.add(itemList);
         JMenuItem userStore = new JMenuItem("Personnel du magasin");
-        menu1.add(userStore);
-        /* Ajouer le menu1 à la bar du menu */
-        menuBar.add(menu1);
+        menuStore.add(userStore);
+        /* Ajouer le menuStore à la bar du menu */
+        menuBar.add(menuStore);
 
         /* Créer le menu User */
         JMenu menuUser = new JMenu("Utilisateur");
@@ -82,6 +80,13 @@ public class Main {
             }
         });
 
+        /* Ajouter un bouton pour voir l'inventaire d'un magasin */
+        itemList.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                new Store().itemList(frame);
+            }
+        });
+
         /* Ajouter un bouton pour voir le personnel du magasin */
         userStore.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -89,51 +94,49 @@ public class Main {
             }
         });
 
+        /* Ajouter un bouton pour voir le profil de l'utilisateur */
         profile.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                //new User().profile(frame);
+                new User().profile(frame);
             }
         });
 
+        /* Ajouter un bouton pour se déconnecter */
         disconnection.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 new User().disconnection(frame);
             }
         });
 
+        /* Ajouter un bouton pour voir la liste des utilisateurs */
         users.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 new User().userList(frame);
             }
         });
 
-        fin.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                container.removeAll(); // Supprimer tous les composants actuels du conteneur
-                JLabel testText = new JLabel("Je suis une fleur");
-                container.add(testText);
-                frame.revalidate(); // Redessiner la frame pour refléter les modifications
-            }
-        });
-
+        /* Ajouter un bouton pour voir la liste des whitelists */
         whitelistList.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 new Admin().whitelistList(frame);
             }
         });
 
+        /* Ajouter un bouton pour voir la liste des magasins */
         storeList.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 new Admin().storeList(frame);
             }
         });
 
+        /* Ajouter un bouton pour changer de magasin */
         changeStore.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 new Store().selectStore(frame);
             }
         });
 
+        /* Ajouter un bouton pour voir les inventaires */
         inventoryList.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 new Admin().inventoryList(frame);

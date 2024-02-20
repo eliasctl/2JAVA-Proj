@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 
 import javax.swing.*;
 import java.awt.*;
@@ -68,10 +69,9 @@ public class User {
                             }
 
                             ((javax.swing.JFrame) frame).getContentPane().removeAll();
-                            ((javax.swing.JFrame) frame).getContentPane()
-                                    .add(new javax.swing.JLabel("Hello World, Welcome to iStore!"));
-
+                            ((javax.swing.JFrame) frame).getContentPane().add(new javax.swing.JLabel("Bienvenue dans l'application iStore"));
                             ((javax.swing.JFrame) frame).revalidate();
+                            new Store().itemList(frame);
                         } else {
                             JOptionPane.showMessageDialog(null, "Pseudo ou Mot de passe incorrect",
                                     "Erreur de Connexion", JOptionPane.ERROR_MESSAGE);
@@ -518,232 +518,277 @@ public class User {
                                 JOptionPane.showMessageDialog((Component) frame, "Veuillez sélectionner un utilisateur",
                                         "Erreur", JOptionPane.ERROR_MESSAGE);
                             } else {
-                                String[] options = { "Pseudo", "E-Mail", "Mot de passe", "Rôle et Magasin" };
-                                int response = JOptionPane.showOptionDialog((Component) frame,
-                                        "Que voulez-vous modifier ?",
-                                        "Modifier un utilisateur", JOptionPane.DEFAULT_OPTION,
-                                        JOptionPane.PLAIN_MESSAGE,
-                                        null, options, options[0]);
-                                switch (response) {
-                                    case 0:
-                                        String newPseudo = JOptionPane.showInputDialog((Component) frame,
-                                                "Nouveau pseudo");
-                                        if (newPseudo != null) {
-                                            sql = "SELECT * FROM users WHERE pseudo = ?";
+                                JComboBox<String> optionsEditUser = new JComboBox<>(new String[] { "Modifier le pseudo",
+                                        "Modifier l'e-mail", "Modifier le mot de passe",
+                                        "Modifier le rôle et le magasin" });
+                                Object[] messageEditUser = { "Action:", optionsEditUser };
+                                int option2EditUser = JOptionPane.showConfirmDialog((Component) frame, messageEditUser,
+                                        "Modifier un utilisateur",
+                                        JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+                                if (option2EditUser == JOptionPane.OK_OPTION) {
+                                    String action = (String) optionsEditUser.getSelectedItem();
+                                    switch (action) {
+                                        case "Modifier le pseudo":
+                                            sql = "SELECT * FROM users WHERE id = ?";
                                             try (PreparedStatement stmt2 = conn.prepareStatement(sql)) {
-                                                stmt2.setString(1, newPseudo);
+                                                stmt2.setInt(1, userId);
                                                 try (ResultSet rs2 = stmt2.executeQuery()) {
                                                     if (rs2.next()) {
-                                                        JOptionPane.showMessageDialog((Component) frame,
-                                                                "Ce pseudo est déjà utilisé",
-                                                                "Erreur", JOptionPane.ERROR_MESSAGE);
-                                                    } else {
-                                                        sql = "UPDATE users SET pseudo = ? WHERE id = ?";
-                                                        try (PreparedStatement stmt3 = conn.prepareStatement(sql)) {
-                                                            stmt3.setString(1, newPseudo);
-                                                            stmt3.setInt(2, userId);
-                                                            int rowsAffected = stmt3.executeUpdate();
-                                                            if (rowsAffected > 0) {
-                                                                JOptionPane.showMessageDialog((Component) frame,
-                                                                        "Pseudo modifié avec succès",
-                                                                        "Succès", JOptionPane.INFORMATION_MESSAGE);
-                                                                new User().userList(frame);
-                                                            } else {
-                                                                JOptionPane.showMessageDialog((Component) frame,
-                                                                        "Erreur lors de la modification du pseudo",
-                                                                        "Erreur", JOptionPane.ERROR_MESSAGE);
-                                                            }
-                                                        } catch (SQLException e) {
-                                                            JOptionPane.showMessageDialog((Component) frame,
-                                                                    "Erreur lors de la modification du pseudo",
-                                                                    "Erreur", JOptionPane.ERROR_MESSAGE);
-                                                            e.printStackTrace();
-                                                        }
-                                                    }
-                                                } catch (SQLException e) {
-                                                    JOptionPane.showMessageDialog((Component) frame,
-                                                            "Erreur lors de la modification du pseudo",
-                                                            "Erreur", JOptionPane.ERROR_MESSAGE);
-                                                    e.printStackTrace();
-                                                }
-                                            } catch (SQLException e) {
-                                                JOptionPane.showMessageDialog((Component) frame,
-                                                        "Erreur lors de la modification du pseudo",
-                                                        "Erreur", JOptionPane.ERROR_MESSAGE);
-                                                e.printStackTrace();
-                                            }
-                                        } else {
-                                            JOptionPane.showMessageDialog((Component) frame,
-                                                    "Veuillez saisir un pseudo",
-                                                    "Erreur", JOptionPane.ERROR_MESSAGE);
-                                        }
-                                        break;
-                                    case 1:
-                                        String newEMail = JOptionPane.showInputDialog((Component) frame,
-                                                "Nouvel e-mail");
-                                        if (newEMail != null) {
-                                            sql = "SELECT * FROM users WHERE email = ?";
-                                            try (PreparedStatement stmt2 = conn.prepareStatement(sql)) {
-                                                stmt2.setString(1, newEMail);
-                                                try (ResultSet rs2 = stmt2.executeQuery()) {
-                                                    if (rs2.next()) {
-                                                        JOptionPane.showMessageDialog((Component) frame,
-                                                                "Cet e-mail est déjà utilisé",
-                                                                "Erreur", JOptionPane.ERROR_MESSAGE);
-                                                    } else {
-                                                        sql = "UPDATE users SET email = ? WHERE id = ?";
-                                                        try (PreparedStatement stmt3 = conn.prepareStatement(sql)) {
-                                                            stmt3.setString(1, newEMail);
-                                                            stmt3.setInt(2, userId);
-                                                            int rowsAffected = stmt3.executeUpdate();
-                                                            if (rowsAffected > 0) {
-                                                                JOptionPane.showMessageDialog((Component) frame,
-                                                                        "E-Mail modifié avec succès",
-                                                                        "Succès", JOptionPane.INFORMATION_MESSAGE);
-                                                                new User().userList(frame);
-                                                            } else {
-                                                                JOptionPane.showMessageDialog((Component) frame,
-                                                                        "Erreur lors de la modification de l'e-mail",
-                                                                        "Erreur", JOptionPane.ERROR_MESSAGE);
-                                                            }
-                                                        } catch (SQLException e) {
-                                                            JOptionPane.showMessageDialog((Component) frame,
-                                                                    "Erreur lors de la modification de l'e-mail",
-                                                                    "Erreur", JOptionPane.ERROR_MESSAGE);
-                                                            e.printStackTrace();
-                                                        }
-                                                    }
-                                                } catch (SQLException e) {
-                                                    JOptionPane.showMessageDialog((Component) frame,
-                                                            "Erreur lors de la modification de l'e-mail",
-                                                            "Erreur", JOptionPane.ERROR_MESSAGE);
-                                                    e.printStackTrace();
-                                                }
-                                            } catch (SQLException e) {
-                                                JOptionPane.showMessageDialog((Component) frame,
-                                                        "Erreur lors de la modification de l'e-mail",
-                                                        "Erreur", JOptionPane.ERROR_MESSAGE);
-                                                e.printStackTrace();
-                                            }
-                                        } else {
-                                            JOptionPane.showMessageDialog((Component) frame,
-                                                    "Veuillez saisir un e-mail",
-                                                    "Erreur", JOptionPane.ERROR_MESSAGE);
-                                        }
-                                        break;
-                                    case 2:
-                                        JPasswordField passwordField = new JPasswordField(10);
-                                        JPasswordField confirmPasswordField = new JPasswordField(10);
-                                        passwordField.setEchoChar('●'); // Masque le texte saisi dans le champ de mot de
-                                                                        // passe
-                                        confirmPasswordField.setEchoChar('●'); // Masque le texte saisi dans le champ de
-                                                                               // mot de passe
-                                        Object[] message2 = { "Code:", passwordField, "Confirmer le code:",
-                                                confirmPasswordField };
-                                        int option2 = JOptionPane.showConfirmDialog((Component) frame, message2,
-                                                "Modifier le mot de passe",
-                                                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-                                        if (option2 == JOptionPane.OK_OPTION) {
-                                            char[] password = passwordField.getPassword();
-                                            char[] confirmPassword = confirmPasswordField.getPassword();
-                                            if (new String(password).equals(new String(confirmPassword))) {
-                                                String hashedPassword = BCrypt.hashpw(new String(password),
-                                                        "$2a$10$VM/GfVScMMgdLVtHwABv6u");
-                                                sql = "UPDATE users SET password = ? WHERE id = ?";
-                                                try (PreparedStatement stmt2 = conn.prepareStatement(sql)) {
-                                                    stmt2.setString(1, hashedPassword);
-                                                    stmt2.setInt(2, userId);
-                                                    int rowsAffected = stmt2.executeUpdate();
-                                                    if (rowsAffected > 0) {
-                                                        JOptionPane.showMessageDialog((Component) frame,
-                                                                "Mot de passe modifié avec succès",
-                                                                "Succès", JOptionPane.INFORMATION_MESSAGE);
-                                                        new User().userList(frame);
-                                                    } else {
-                                                        JOptionPane.showMessageDialog((Component) frame,
-                                                                "Erreur lors de la modification du mot de passe",
-                                                                "Erreur", JOptionPane.ERROR_MESSAGE);
-                                                    }
-                                                } catch (SQLException e) {
-                                                    JOptionPane.showMessageDialog((Component) frame,
-                                                            "Erreur lors de la modification du mot de passe",
-                                                            "Erreur", JOptionPane.ERROR_MESSAGE);
-                                                    e.printStackTrace();
-                                                }
-                                            } else {
-                                                JOptionPane.showMessageDialog((Component) frame,
-                                                        "Les mots de passe ne correspondent pas",
-                                                        "Erreur", JOptionPane.ERROR_MESSAGE);
-                                            }
-                                        }
-                                        break;
-                                    case 3:
-                                        sql = "SELECT * FROM store";
-                                        try (PreparedStatement stmt3 = conn.prepareStatement(sql)) {
-                                            try (ResultSet rs3 = stmt3.executeQuery()) {
-                                                JComboBox<String> roleField = new JComboBox<>(
-                                                        new String[] { "EMPLOYEE", "MANAGER", "ADMIN" });
-                                                JComboBox<String> storeList = new JComboBox<>();
-                                                storeList.addItem("Sélectionnez un magasin");
-                                                while (rs3.next()) {
-                                                    storeList.addItem(
-                                                            rs3.getString("id") + " - " + rs3.getString("name"));
-                                                }
-                                                Object[] message3 = {
-                                                        "Rôle:", roleField,
-                                                        "Magasin:", storeList,
-                                                };
-                                                int option3 = JOptionPane.showConfirmDialog((Component) frame, message3,
-                                                        "Modifier le rôle et le magasin d'un utilisateur",
-                                                        JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-                                                if (option3 == JOptionPane.OK_OPTION) {
-                                                    String role = (String) roleField.getSelectedItem();
-                                                    String selectedStore = storeList.getSelectedItem().toString();
-                                                    int storeId = 0;
-                                                    if (!"Sélectionnez un magasin".equals(selectedStore)) {
-                                                        String[] idStore = selectedStore.split(" - ");
-                                                        storeId = Integer.parseInt(idStore[0]);
-                                                    }
-                                                    if ("Sélectionnez un magasin".equals(selectedStore)
-                                                            && !"ADMIN".equals(role)) {
-                                                        JOptionPane.showMessageDialog((Component) frame,
-                                                                "Le rôle MANAGER ou EMPLOYEE doit être associé à un magasin",
-                                                                "Erreur", JOptionPane.ERROR_MESSAGE);
-                                                    } else {
-                                                        // Insertion de l'utilisateur dans la table des utilisateurs
-                                                        if ("Sélectionnez un magasin".equals(selectedStore)) {
-                                                            sql = "UPDATE users SET role = ?, store = NULL WHERE id = ?";
-                                                            try (PreparedStatement stmt4 = conn.prepareStatement(sql)) {
-                                                                stmt4.setString(1, role);
-                                                                stmt4.setInt(2, userId);
-                                                                int rowsAffected = stmt4.executeUpdate();
-                                                                if (rowsAffected > 0) {
+                                                        String currentPseudo = rs2.getString("pseudo");
+                                                        String newPseudo = JOptionPane.showInputDialog(
+                                                                (Component) frame,
+                                                                "Nouveau pseudo", currentPseudo);
+                                                        if (newPseudo != null) {
+                                                            sql = "SELECT * FROM users WHERE pseudo = ?";
+                                                            try (PreparedStatement stmt3 = conn.prepareStatement(sql)) {
+                                                                stmt3.setString(1, newPseudo);
+                                                                try (ResultSet rs3 = stmt3.executeQuery()) {
+                                                                    if (rs3.next()) {
+                                                                        JOptionPane.showMessageDialog((Component) frame,
+                                                                                "Ce pseudo est déjà utilisé",
+                                                                                "Erreur", JOptionPane.ERROR_MESSAGE);
+                                                                    } else {
+                                                                        sql = "UPDATE users SET pseudo = ? WHERE id = ?";
+                                                                        try (PreparedStatement stmt4 = conn
+                                                                                .prepareStatement(sql)) {
+                                                                            stmt4.setString(1, newPseudo);
+                                                                            stmt4.setInt(2, userId);
+                                                                            int rowsAffected = stmt4.executeUpdate();
+                                                                            if (rowsAffected > 0) {
+                                                                                JOptionPane.showMessageDialog(
+                                                                                        (Component) frame,
+                                                                                        "Pseudo modifié avec succès",
+                                                                                        "Succès",
+                                                                                        JOptionPane.INFORMATION_MESSAGE);
+                                                                                new User().userList(frame);
+                                                                            } else {
+                                                                                JOptionPane.showMessageDialog(
+                                                                                        (Component) frame,
+                                                                                        "Erreur lors de la modification du pseudo",
+                                                                                        "Erreur",
+                                                                                        JOptionPane.ERROR_MESSAGE);
+                                                                            }
+                                                                        } catch (SQLException e) {
+                                                                            JOptionPane.showMessageDialog(
+                                                                                    (Component) frame,
+                                                                                    "Erreur lors de la modification du pseudo",
+                                                                                    "Erreur",
+                                                                                    JOptionPane.ERROR_MESSAGE);
+                                                                            e.printStackTrace();
+                                                                        }
+                                                                    }
+                                                                } catch (SQLException e) {
                                                                     JOptionPane.showMessageDialog((Component) frame,
-                                                                            "Utilisateur modifié avec succès",
-                                                                            "Succès", JOptionPane.INFORMATION_MESSAGE);
-                                                                    new User().userList(frame);
-                                                                } else {
-                                                                    JOptionPane.showMessageDialog((Component) frame,
-                                                                            "Erreur lors de la modification de l'utilisateur",
+                                                                            "Erreur lors de la modification du pseudo",
                                                                             "Erreur", JOptionPane.ERROR_MESSAGE);
+                                                                    e.printStackTrace();
                                                                 }
                                                             } catch (SQLException e) {
                                                                 JOptionPane.showMessageDialog((Component) frame,
-                                                                        "Erreur lors de la modification de l'utilisateur",
+                                                                        "Erreur lors de la modification du pseudo",
                                                                         "Erreur", JOptionPane.ERROR_MESSAGE);
                                                                 e.printStackTrace();
                                                             }
                                                         } else {
-                                                            sql = "UPDATE users SET role = ?, store = ? WHERE id = ?";
+                                                            JOptionPane.showMessageDialog((Component) frame,
+                                                                    "Veuillez saisir un pseudo",
+                                                                    "Erreur", JOptionPane.ERROR_MESSAGE);
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            break;
+                                        case "Modifier l'e-mail":
+                                            sql = "SELECT * FROM users WHERE id = ?";
+                                            try (PreparedStatement stmt2 = conn.prepareStatement(sql)) {
+                                                stmt2.setInt(1, userId);
+                                                try (ResultSet rs2 = stmt2.executeQuery()) {
+                                                    if (rs2.next()) {
+                                                        String currentEmail = rs2.getString("email");
+                                                        String newEmail = JOptionPane.showInputDialog((Component) frame,
+                                                                "Nouvel e-mail", currentEmail);
+                                                        if (newEmail != null) {
+                                                            sql = "SELECT * FROM users WHERE email = ?";
+                                                            try (PreparedStatement stmt3 = conn.prepareStatement(sql)) {
+                                                                stmt3.setString(1, newEmail);
+                                                                try (ResultSet rs3 = stmt3.executeQuery()) {
+                                                                    if (rs3.next()) {
+                                                                        JOptionPane.showMessageDialog((Component) frame,
+                                                                                "Cet e-mail est déjà utilisé",
+                                                                                "Erreur", JOptionPane.ERROR_MESSAGE);
+                                                                    } else {
+                                                                        sql = "UPDATE users SET email = ? WHERE id = ?";
+                                                                        try (PreparedStatement stmt4 = conn
+                                                                                .prepareStatement(sql)) {
+                                                                            stmt4.setString(1, newEmail);
+                                                                            stmt4.setInt(2, userId);
+                                                                            int rowsAffected = stmt4.executeUpdate();
+                                                                            if (rowsAffected > 0) {
+                                                                                JOptionPane.showMessageDialog(
+                                                                                        (Component) frame,
+                                                                                        "E-Mail modifié avec succès",
+                                                                                        "Succès",
+                                                                                        JOptionPane.INFORMATION_MESSAGE);
+                                                                                new User().userList(frame);
+                                                                            } else {
+                                                                                JOptionPane.showMessageDialog(
+                                                                                        (Component) frame,
+                                                                                        "Erreur lors de la modification de l'e-mail",
+                                                                                        "Erreur",
+                                                                                        JOptionPane.ERROR_MESSAGE);
+                                                                            }
+                                                                        } catch (SQLException e) {
+                                                                            JOptionPane.showMessageDialog(
+                                                                                    (Component) frame,
+                                                                                    "Erreur lors de la modification de l'e-mail",
+                                                                                    "Erreur",
+                                                                                    JOptionPane.ERROR_MESSAGE);
+                                                                            e.printStackTrace();
+                                                                        }
+                                                                    }
+                                                                } catch (SQLException e) {
+                                                                    JOptionPane.showMessageDialog((Component) frame,
+                                                                            "Erreur lors de la modification de l'e-mail",
+                                                                            "Erreur", JOptionPane.ERROR_MESSAGE);
+                                                                    e.printStackTrace();
+                                                                }
+                                                            } catch (SQLException e) {
+                                                                JOptionPane.showMessageDialog((Component) frame,
+                                                                        "Erreur lors de la modification de l'e-mail",
+                                                                        "Erreur", JOptionPane.ERROR_MESSAGE);
+                                                                e.printStackTrace();
+                                                            }
+                                                        } else {
+                                                            JOptionPane.showMessageDialog((Component) frame,
+                                                                    "Veuillez saisir un e-mail",
+                                                                    "Erreur", JOptionPane.ERROR_MESSAGE);
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            break;
+                                        case "Modifier le mot de passe":
+                                            JPasswordField passwordField = new JPasswordField(10);
+                                            JPasswordField confirmPasswordField = new JPasswordField(10);
+                                            passwordField.setEchoChar('●'); // Masque le texte saisi dans le champ de
+                                                                            // mot de
+                                                                            // passe
+                                            confirmPasswordField.setEchoChar('●'); // Masque le texte saisi dans le
+                                                                                   // champ de
+                                                                                   // mot de passe
+                                            Object[] message2 = { "Code:", passwordField, "Confirmer le code:",
+                                                    confirmPasswordField };
+                                            int option2 = JOptionPane.showConfirmDialog((Component) frame, message2,
+                                                    "Modifier le mot de passe",
+                                                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+                                            if (option2 == JOptionPane.OK_OPTION) {
+                                                char[] password = passwordField.getPassword();
+                                                char[] confirmPassword = confirmPasswordField.getPassword();
+                                                if (new String(password).equals(new String(confirmPassword))) {
+                                                    String hashedPassword = BCrypt.hashpw(new String(password),
+                                                            "$2a$10$VM/GfVScMMgdLVtHwABv6u");
+                                                    sql = "UPDATE users SET password = ? WHERE id = ?";
+                                                    try (PreparedStatement stmt2 = conn.prepareStatement(sql)) {
+                                                        stmt2.setString(1, hashedPassword);
+                                                        stmt2.setInt(2, userId);
+                                                        int rowsAffected = stmt2.executeUpdate();
+                                                        if (rowsAffected > 0) {
+                                                            JOptionPane.showMessageDialog((Component) frame,
+                                                                    "Mot de passe modifié avec succès",
+                                                                    "Succès", JOptionPane.INFORMATION_MESSAGE);
+                                                            new User().userList(frame);
+                                                        } else {
+                                                            JOptionPane.showMessageDialog((Component) frame,
+                                                                    "Erreur lors de la modification du mot de passe",
+                                                                    "Erreur", JOptionPane.ERROR_MESSAGE);
+                                                        }
+                                                    } catch (SQLException e) {
+                                                        JOptionPane.showMessageDialog((Component) frame,
+                                                                "Erreur lors de la modification du mot de passe",
+                                                                "Erreur", JOptionPane.ERROR_MESSAGE);
+                                                        e.printStackTrace();
+                                                    }
+                                                } else {
+                                                    JOptionPane.showMessageDialog((Component) frame,
+                                                            "Les mots de passe ne correspondent pas",
+                                                            "Erreur", JOptionPane.ERROR_MESSAGE);
+                                                }
+                                            }
+                                            break;
+                                        case "Modifier le rôle et le magasin":
+                                            sql = "SELECT * FROM store";
+                                            try (PreparedStatement stmt3 = conn.prepareStatement(sql)) {
+                                                try (ResultSet rs3 = stmt3.executeQuery()) {
+                                                    JComboBox<String> roleField = new JComboBox<>(
+                                                            new String[] { "EMPLOYEE", "MANAGER", "ADMIN" });
+                                                    JComboBox<String> storeList = new JComboBox<>();
+                                                    storeList.addItem("Sélectionnez un magasin");
+                                                    int currentUserStoreId = 0;
+                                                    sql = "SELECT role, store FROM users WHERE id = ?";
+                                                    try (PreparedStatement currentStoreStmt = conn
+                                                            .prepareStatement(sql)) {
+                                                        currentStoreStmt.setInt(1, userId);
+                                                        try (ResultSet currentStoreRs = currentStoreStmt
+                                                                .executeQuery()) {
+                                                            if (currentStoreRs.next()) {
+                                                                String currentUserRole = currentStoreRs
+                                                                        .getString("role");
+                                                                roleField.setSelectedItem(currentUserRole);
+                                                                currentUserStoreId = currentStoreRs.getInt("store");
+                                                            }
+                                                        }
+                                                    }
+                                                    while (rs3.next()) {
+                                                        int storeId = rs3.getInt("id");
+                                                        String storeName = rs3.getString("name");
+                                                        storeList.addItem(storeId + " - " + storeName);
+                                                        if (storeId == currentUserStoreId) {
+                                                            storeList.setSelectedItem(storeId + " - " + storeName);
+                                                        }
+                                                    }
+                                                    Object[] message3 = {
+                                                            "Rôle:", roleField,
+                                                            "Magasin:", storeList,
+                                                    };
+                                                    int option3 = JOptionPane.showConfirmDialog((Component) frame,
+                                                            message3,
+                                                            "Modifier le rôle et le magasin d'un utilisateur",
+                                                            JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+                                                    if (option3 == JOptionPane.OK_OPTION) {
+                                                        String role = (String) roleField.getSelectedItem();
+                                                        String selectedStore = storeList.getSelectedItem().toString();
+                                                        int storeId = 0;
+                                                        if (!"Sélectionnez un magasin".equals(selectedStore)) {
+                                                            String[] idStore = selectedStore.split(" - ");
+                                                            storeId = Integer.parseInt(idStore[0]);
+                                                        }
+                                                        if ("Sélectionnez un magasin".equals(selectedStore)
+                                                                && !"ADMIN".equals(role)) {
+                                                            JOptionPane.showMessageDialog((Component) frame,
+                                                                    "Le rôle MANAGER ou EMPLOYEE doit être associé à un magasin",
+                                                                    "Erreur", JOptionPane.ERROR_MESSAGE);
+                                                        } else {
+                                                            if ("Sélectionnez un magasin".equals(selectedStore)) {
+                                                                sql = "UPDATE users SET role = ?, store = NULL WHERE id = ?";
+                                                            } else {
+                                                                sql = "UPDATE users SET role = ?, store = ? WHERE id = ?";
+                                                            }
                                                             try (PreparedStatement stmt4 = conn.prepareStatement(sql)) {
                                                                 stmt4.setString(1, role);
-                                                                stmt4.setInt(2, storeId);
-                                                                stmt4.setInt(3, userId);
+                                                                if (!"Sélectionnez un magasin".equals(selectedStore)) {
+                                                                    stmt4.setInt(2, storeId);
+                                                                }
+                                                                stmt4.setInt(
+                                                                        !"Sélectionnez un magasin".equals(selectedStore)
+                                                                                ? 3
+                                                                                : 2,
+                                                                        userId);
                                                                 int rowsAffected = stmt4.executeUpdate();
                                                                 if (rowsAffected > 0) {
                                                                     JOptionPane.showMessageDialog((Component) frame,
                                                                             "Utilisateur modifié avec succès",
-                                                                            "Succès", JOptionPane.INFORMATION_MESSAGE);
+                                                                            "Succès",
+                                                                            JOptionPane.INFORMATION_MESSAGE);
                                                                     new User().userList(frame);
                                                                 } else {
                                                                     JOptionPane.showMessageDialog((Component) frame,
@@ -758,6 +803,11 @@ public class User {
                                                             }
                                                         }
                                                     }
+                                                } catch (SQLException e) {
+                                                    JOptionPane.showMessageDialog((Component) frame,
+                                                            "Une erreur s'est produite lors de la récupération des magasins",
+                                                            "Erreur", JOptionPane.ERROR_MESSAGE);
+                                                    e.printStackTrace();
                                                 }
                                             } catch (SQLException e) {
                                                 JOptionPane.showMessageDialog((Component) frame,
@@ -765,15 +815,11 @@ public class User {
                                                         "Erreur", JOptionPane.ERROR_MESSAGE);
                                                 e.printStackTrace();
                                             }
-                                        } catch (SQLException e) {
-                                            JOptionPane.showMessageDialog((Component) frame,
-                                                    "Une erreur s'est produite lors de la récupération des magasins",
-                                                    "Erreur", JOptionPane.ERROR_MESSAGE);
-                                            e.printStackTrace();
-                                        }
-                                        break;
-                                    default:
-                                        break;
+                                            break;
+
+                                        default:
+                                            break;
+                                    }
                                 }
 
                             }
@@ -871,4 +917,138 @@ public class User {
         }
     }
 
+    public void profile(Object frame) {
+        try (Connection conn = DriverManager.getConnection(Conf.DB_URL, Conf.DB_USER, Conf.DB_PASSWORD)) {
+            String sql = "SELECT * FROM users WHERE id = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setInt(1, Integer.parseInt(User.id));
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        String pseudo = rs.getString("pseudo");
+                        String email = rs.getString("email");
+                        String role = rs.getString("role");
+                        String store = rs.getString("store");
+                        String storeName = "";
+                        if (store != null) {
+                            sql = "SELECT name FROM store WHERE id = ?";
+                            try (PreparedStatement stmt2 = conn.prepareStatement(sql)) {
+                                stmt2.setInt(1, Integer.parseInt(store));
+                                try (ResultSet rs2 = stmt2.executeQuery()) {
+                                    if (rs2.next()) {
+                                        storeName = rs2.getString("name");
+                                    }
+                                }
+                            }
+                        }
+                        Object[] message = {
+                                "Pseudo:", pseudo,
+                                "E-Mail:", email,
+                                "Rôle:", role,
+                                "Magasin:", storeName,
+                        };
+                        // bouton pour fermer un un pour modifier
+                        int option = JOptionPane.showOptionDialog((Component) frame, message, "Profil",
+                                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null,
+                                new String[] { "Modifier", "Fermer" }, null);
+                        if (option == JOptionPane.OK_OPTION) {
+                            // Modifier le profil
+                            JTextField pseudoField = new JTextField(10);
+                            JTextField emailField = new JTextField(10);
+                            JPasswordField passwordField = new JPasswordField(10);
+                            JPasswordField confirmPasswordField = new JPasswordField(10);
+                            passwordField.setEchoChar('●'); // Masque le texte saisi dans le champ de mot de passe
+                            confirmPasswordField.setEchoChar('●'); // Masque le texte saisi dans le champ de mot de passe
+                            pseudoField.setText(pseudo);
+                            emailField.setText(email);
+                            Object[] message2 = {
+                                    "Pseudo:", pseudoField,
+                                    "E-Mail:", emailField,
+                                    "Nouveau mot de passe:", passwordField,
+                                    "Confirmer le mot de passe:", confirmPasswordField,
+                            };
+                            int option2 = JOptionPane.showConfirmDialog((Component) frame, message2,
+                                    "Modifier le profil",
+                                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+                            if (option2 == JOptionPane.OK_OPTION) {
+                                String newPseudo = pseudoField.getText();
+                                String newEmail = emailField.getText();
+                                char[] password = passwordField.getPassword();
+                                char[] confirmPassword = confirmPasswordField.getPassword();
+                                if (newPseudo.isEmpty() || newEmail.isEmpty()) {
+                                    JOptionPane.showMessageDialog((Component) frame,
+                                            "Veuillez remplir tous les champs",
+                                            "Erreur", JOptionPane.ERROR_MESSAGE);
+                                } else {
+                                    // Vérifier si le pseudo est déjà utilisé
+                                    sql = "SELECT * FROM users WHERE pseudo = ?";
+                                    try (PreparedStatement stmt3 = conn.prepareStatement(sql)) {
+                                        stmt3.setString(1, newPseudo);
+                                        try (ResultSet rs3 = stmt3.executeQuery()) {
+                                            if (rs3.next() && !pseudo.equals(newPseudo)) {
+                                                JOptionPane.showMessageDialog((Component) frame,
+                                                        "Ce pseudo est déjà utilisé",
+                                                        "Erreur", JOptionPane.ERROR_MESSAGE);
+                                            } else {
+                                                // Vérifier si l'e-mail est déjà utilisé
+                                                sql = "SELECT * FROM users WHERE email = ?";
+                                                try (PreparedStatement stmt4 = conn.prepareStatement(sql)) {
+                                                    stmt4.setString(1, newEmail);
+                                                    try (ResultSet rs4 = stmt4.executeQuery()) {
+                                                        if (rs4.next() && !email.equals(newEmail)) {
+                                                            JOptionPane.showMessageDialog((Component) frame,
+                                                                    "Cet e-mail est déjà utilisé",
+                                                                    "Erreur", JOptionPane.ERROR_MESSAGE);
+                                                        } else {
+                                                            // Vérifier si les mots de passe correspondent
+                                                            if (Arrays.equals(password, confirmPassword)) {
+                                                                // Hasher le nouveau mot de passe
+                                                                String hashedPassword = BCrypt.hashpw(new String(password), "$2a$10$VM/GfVScMMgdLVtHwABv6u");
+                                                                // Mettre à jour le profil
+                                                                sql = "UPDATE users SET pseudo = ?, email = ?, password = ? WHERE id = ?";
+                                                                try (PreparedStatement updateStmt = conn.prepareStatement(sql)) {
+                                                                    updateStmt.setString(1, newPseudo);
+                                                                    updateStmt.setString(2, newEmail);
+                                                                    updateStmt.setString(3, hashedPassword);
+                                                                    updateStmt.setInt(4, Integer.parseInt(User.id));
+                                                                    int rowsAffected = updateStmt.executeUpdate();
+                                                                    if (rowsAffected > 0) {
+                                                                        JOptionPane.showMessageDialog((Component) frame,
+                                                                                "Profil mis à jour avec succès vous allez être déconnecté pour vous reconnecter avec vos nouveaux identifiants",
+                                                                                "Succès", JOptionPane.INFORMATION_MESSAGE);
+                                                                        new User().disconnection(frame);
+                                                                    } else {
+                                                                        JOptionPane.showMessageDialog((Component) frame,
+                                                                                "Erreur lors de la mise à jour du profil",
+                                                                                "Erreur", JOptionPane.ERROR_MESSAGE);
+                                                                    }
+                                                                }
+                                                            } else {
+                                                                JOptionPane.showMessageDialog((Component) frame,
+                                                                        "Les mots de passe ne correspondent pas",
+                                                                        "Erreur", JOptionPane.ERROR_MESSAGE);
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    } catch (SQLException e) {
+                                        JOptionPane.showMessageDialog((Component) frame,
+                                                "Erreur lors de la vérification du pseudo",
+                                                "Erreur", JOptionPane.ERROR_MESSAGE);
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog((Component) frame,
+                    "Erreur lors de la récupération du profil",
+                    "Erreur", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
+    }
 }

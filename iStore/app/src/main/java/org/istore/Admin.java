@@ -424,6 +424,56 @@ public class Admin {
     }
 
     private void deleteInventory(Object frame) {
-        //
+        try (Connection conn = DriverManager.getConnection(Conf.DB_URL, Conf.DB_USER, Conf.DB_PASSWORD)) {
+            String sqlSelect = "SELECT * FROM store WHERE id IN (SELECT DISTINCT inventory FROM items)";
+            try (PreparedStatement stmtSelect = conn.prepareStatement(sqlSelect)) {
+                try (ResultSet rs = stmtSelect.executeQuery()) {
+                    JComboBox<String> storeList = new JComboBox<String>();
+                    storeList.addItem("Sélectionner un inventaire");
+                    while (rs.next()) {
+                        storeList.addItem(rs.getString("id") + " - " + rs.getString("name"));
+                    }
+                    Object[] message = { "ID de l'inventaire:", storeList };
+                    int option = JOptionPane.showConfirmDialog(null, message, "Supprimer un inventaire",
+                            JOptionPane.OK_CANCEL_OPTION);
+                    if (option == JOptionPane.OK_OPTION) {
+                        if (storeList.getSelectedItem().toString().equals("Sélectionner un inventaire")) {
+                            JOptionPane.showMessageDialog(null, "Veuillez sélectionner un inventaire",
+                                    "Erreur", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                        String[] idName = storeList.getSelectedItem().toString().split(" - ");
+                        try (Connection conn2 = DriverManager.getConnection(Conf.DB_URL, Conf.DB_USER,
+                                Conf.DB_PASSWORD)) {
+                            String sqlDelete = "DELETE FROM items WHERE inventory = ?";
+                            try (PreparedStatement stmtDelete = conn2.prepareStatement(sqlDelete)) {
+                                stmtDelete.setString(1, idName[0]);
+                                stmtDelete.executeUpdate();
+                                JOptionPane.showMessageDialog(null, "Inventaire supprimé avec succès",
+                                        "Succès", JOptionPane.INFORMATION_MESSAGE);
+                                new Admin().inventoryList(frame);
+                            }
+                        } catch (SQLException e) {
+                            JOptionPane.showMessageDialog(null, "Erreur lors de la suppression de l'inventaire",
+                                    "Erreur", JOptionPane.ERROR_MESSAGE);
+                            e.printStackTrace();
+                        }
+                    }
+                } catch (SQLException e) {
+                    JOptionPane.showMessageDialog(null, "Erreur lors de la récupération des inventaires",
+                            "Erreur", JOptionPane.ERROR_MESSAGE);
+                    e.printStackTrace();
+                }
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(null, "Erreur lors de la récupération des inventaires",
+                        "Erreur", JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Erreur lors de la récupération des inventaires",
+                    "Erreur", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
     }
+
 }
