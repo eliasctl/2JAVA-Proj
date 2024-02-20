@@ -18,6 +18,7 @@ public class User {
     public static String pseudo = "";
     public static String eMail = "";
     public static String role = "";
+    public static String page = "";
     public static Integer store = null;
 
     public void connection(Object frame) {
@@ -251,6 +252,7 @@ public class User {
     }
 
     public void userList(Object frame) {
+        User.page = "userList";
         try (Connection conn = DriverManager.getConnection(Conf.DB_URL, Conf.DB_USER, Conf.DB_PASSWORD)) {
             ((javax.swing.JFrame) frame).getContentPane().removeAll();
             ((javax.swing.JFrame) frame).setLayout(new BorderLayout());
@@ -258,13 +260,13 @@ public class User {
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                 try (ResultSet rs = stmt.executeQuery()) {
                     String[][] stores = new String[0][0];
-                    // il peut y avoir des sauts dans les id des magasins fait une liste liste = [id][nom du magasin]
+                    // il peut y avoir des sauts dans les id des magasins fait une liste liste =
+                    // [id][nom du magasin]
                     while (rs.next()) {
                         String[] row = { rs.getString("id"), rs.getString("name") };
                         stores = java.util.Arrays.copyOf(stores, stores.length + 1);
                         stores[stores.length - 1] = row;
                     }
-                    System.out.println(java.util.Arrays.toString(stores));
                     sql = "SELECT * FROM users";
                     try (PreparedStatement stmt2 = conn.prepareStatement(sql)) {
                         try (ResultSet rs2 = stmt2.executeQuery()) {
@@ -321,7 +323,7 @@ public class User {
                 JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
         switch (response) {
             case 0:
-                new Admin().whitelistList(frame);
+                new User().addUser(frame);
                 break;
             case 1:
                 new User().editUser(frame);
@@ -334,6 +336,159 @@ public class User {
         }
     }
 
+    public void addUser(Object frame) {
+        try (Connection conn = DriverManager.getConnection(Conf.DB_URL, Conf.DB_USER, Conf.DB_PASSWORD)) {
+            String sqlSelect = "SELECT * FROM store";
+            try (PreparedStatement stmtSelect = conn.prepareStatement(sqlSelect)) {
+                try (ResultSet rs = stmtSelect.executeQuery()) {
+                    JTextField emailField = new JTextField(10);
+                    JComboBox<String> roleField = new JComboBox<>(new String[] { "EMPLOYEE", "MANAGER", "ADMIN" });
+                    JComboBox<String> storeList = new JComboBox<>();
+                    storeList.addItem("Sélectionnez un magasin");
+                    while (rs.next()) {
+                        storeList.addItem(rs.getString("id") + " - " + rs.getString("name"));
+                    }
+                    Object[] message = {
+                            "E-Mail:", emailField,
+                            "Rôle:", roleField,
+                            "Magasin:", storeList,
+                    };
+                    int option = JOptionPane.showConfirmDialog((Component) frame, message, "Ajouter un utilisateur",
+                            JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+                    if (option == JOptionPane.OK_OPTION) {
+                        String email = emailField.getText();
+                        String role = (String) roleField.getSelectedItem();
+                        String selectedStore = storeList.getSelectedItem().toString();
+                        int storeId = 0;
+                        if (!"Sélectionnez un magasin".equals(selectedStore)) {
+                            String[] idStore = selectedStore.split(" - ");
+                            storeId = Integer.parseInt(idStore[0]);
+                        }
+                        if (email.isEmpty()
+                                || ("Sélectionnez un magasin".equals(selectedStore) && !"ADMIN".equals(role))) {
+                            JOptionPane.showMessageDialog((Component) frame,
+                                    "Veuillez remplir tous les champs, sauf le magasin pour un ADMIN",
+                                    "Erreur", JOptionPane.ERROR_MESSAGE);
+                        } else {
+                            // Vérifier que l'email n'est pas déjà utilisé par un utilisateur
+                            String sql = "SELECT * FROM users WHERE email = ?";
+                            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                                stmt.setString(1, email);
+                                try (ResultSet rs2 = stmt.executeQuery()) {
+                                    if (rs2.next()) {
+                                        JOptionPane.showMessageDialog((Component) frame, "Cet e-mail est déjà utilisé",
+                                                "Erreur", JOptionPane.ERROR_MESSAGE);
+                                    } else {
+                                        // Vérifier que l'email est dans la whitelist
+                                        String sqlWhitelist = "SELECT * FROM whitelist WHERE email = ?";
+                                        try (PreparedStatement stmtWhitelist = conn.prepareStatement(sqlWhitelist)) {
+                                            stmtWhitelist.setString(1, email);
+                                            try (ResultSet rs3 = stmtWhitelist.executeQuery()) {
+                                                if (rs3.next()) {
+                                                    JOptionPane.showMessageDialog((Component) frame,
+                                                            "Cet e-mail est déjà dans la whitelist",
+                                                            "Erreur", JOptionPane.ERROR_MESSAGE);
+                                                } else {
+                                                    // Insertion de l'utilisateur dans la table des utilisateurs
+                                                    if ("Sélectionnez un magasin".equals(selectedStore)) {
+                                                        String sqlInsert = "INSERT INTO whitelist (email, role) VALUES (?, ?)";
+                                                        try (PreparedStatement stmtInsert = conn
+                                                                .prepareStatement(sqlInsert)) {
+                                                            stmtInsert.setString(1, email);
+                                                            stmtInsert.setString(2, role);
+                                                            int rowsAffected = stmtInsert.executeUpdate();
+                                                            if (rowsAffected > 0) {
+                                                                JOptionPane.showMessageDialog((Component) frame,
+                                                                        "Utilisateur ajouté avec succès",
+                                                                        "Succès", JOptionPane.INFORMATION_MESSAGE);
+                                                                switch (User.page) {
+                                                                    case "whitelistList":
+                                                                        new Admin().whitelistList(frame);
+                                                                        break;
+                                                                    default:
+                                                                        break;
+                                                                }
+                                                            } else {
+                                                                JOptionPane.showMessageDialog((Component) frame,
+                                                                        "Erreur lors de l'ajout de l'utilisateur",
+                                                                        "Erreur", JOptionPane.ERROR_MESSAGE);
+                                                            }
+                                                        } catch (SQLException e) {
+                                                            JOptionPane.showMessageDialog((Component) frame,
+                                                                    "Erreur lors de l'ajout de l'utilisateur",
+                                                                    "Erreur", JOptionPane.ERROR_MESSAGE);
+                                                            e.printStackTrace();
+                                                        }
+                                                    } else {
+                                                        String sqlInsert = "INSERT INTO whitelist (email, role, store) VALUES (?, ?, ?)";
+                                                        try (PreparedStatement stmtInsert = conn
+                                                                .prepareStatement(sqlInsert)) {
+                                                            stmtInsert.setString(1, email);
+                                                            stmtInsert.setString(2, role);
+                                                            stmtInsert.setInt(3, storeId);
+                                                            int rowsAffected = stmtInsert.executeUpdate();
+                                                            if (rowsAffected > 0) {
+                                                                JOptionPane.showMessageDialog((Component) frame,
+                                                                        "Utilisateur ajouté avec succès",
+                                                                        "Succès", JOptionPane.INFORMATION_MESSAGE);
+                                                                switch (User.page) {
+                                                                    case "whitelistList":
+                                                                        new Admin().whitelistList(frame);
+                                                                        break;
+                                                                    default:
+                                                                        break;
+                                                                }
+                                                                new Admin().whitelistList(frame);
+                                                            } else {
+                                                                JOptionPane.showMessageDialog((Component) frame,
+                                                                        "Erreur lors de l'ajout de l'utilisateur",
+                                                                        "Erreur", JOptionPane.ERROR_MESSAGE);
+                                                            }
+                                                        } catch (SQLException e) {
+                                                            JOptionPane.showMessageDialog((Component) frame,
+                                                                    "Erreur lors de l'ajout de l'utilisateur",
+                                                                    "Erreur", JOptionPane.ERROR_MESSAGE);
+                                                            e.printStackTrace();
+                                                        }
+                                                    }
+                                                }
+                                            } catch (SQLException e) {
+                                                JOptionPane.showMessageDialog((Component) frame,
+                                                        "Erreur lors de la vérification de l'email dans la whitelist",
+                                                        "Erreur", JOptionPane.ERROR_MESSAGE);
+                                                e.printStackTrace();
+                                            }
+                                        }
+                                    }
+                                } catch (SQLException e) {
+                                    JOptionPane.showMessageDialog((Component) frame,
+                                            "Erreur lors de la vérification de l'email dans la table des utilisateurs",
+                                            "Erreur", JOptionPane.ERROR_MESSAGE);
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    }
+                } catch (SQLException e) {
+                    JOptionPane.showMessageDialog((Component) frame,
+                            "Une erreur s'est produite lors de la récupération des magasins",
+                            "Erreur", JOptionPane.ERROR_MESSAGE);
+                    e.printStackTrace();
+                }
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog((Component) frame,
+                        "Une erreur s'est produite lors de la récupération des magasins",
+                        "Erreur", JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog((Component) frame,
+                    "Une erreur s'est produite lors de la connexion à la base de donnée",
+                    "Erreur", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
+    }
+
     private void editUser(Object frame) {
         try (Connection conn = DriverManager.getConnection(Conf.DB_URL, Conf.DB_USER, Conf.DB_PASSWORD)) {
             String sql = "SELECT * FROM users";
@@ -342,12 +497,14 @@ public class User {
                     JComboBox<String> userList = new JComboBox<>();
                     userList.addItem("Sélectionnez un utilisateur");
                     while (rs.next()) {
-                        userList.addItem(rs.getString("id") + " - " + rs.getString("pseudo") + " - " + rs.getString("email"));
+                        userList.addItem(
+                                rs.getString("id") + " - " + rs.getString("pseudo") + " - " + rs.getString("email"));
                     }
                     Object[] message = {
                             "Utilisateur:", userList,
                     };
-                    int option = JOptionPane.showConfirmDialog((Component) frame, message, "Modifier le magasin d'un utilisateur",
+                    int option = JOptionPane.showConfirmDialog((Component) frame, message,
+                            "Modifier le magasin d'un utilisateur",
                             JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
                     if (option == JOptionPane.OK_OPTION) {
                         String selectedUser = userList.getSelectedItem().toString();
@@ -362,12 +519,15 @@ public class User {
                                         "Erreur", JOptionPane.ERROR_MESSAGE);
                             } else {
                                 String[] options = { "Pseudo", "E-Mail", "Mot de passe", "Rôle et Magasin" };
-                                int response = JOptionPane.showOptionDialog((Component) frame, "Que voulez-vous modifier ?",
-                                        "Modifier un utilisateur", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE,
+                                int response = JOptionPane.showOptionDialog((Component) frame,
+                                        "Que voulez-vous modifier ?",
+                                        "Modifier un utilisateur", JOptionPane.DEFAULT_OPTION,
+                                        JOptionPane.PLAIN_MESSAGE,
                                         null, options, options[0]);
                                 switch (response) {
                                     case 0:
-                                        String newPseudo = JOptionPane.showInputDialog((Component) frame, "Nouveau pseudo");
+                                        String newPseudo = JOptionPane.showInputDialog((Component) frame,
+                                                "Nouveau pseudo");
                                         if (newPseudo != null) {
                                             sql = "SELECT * FROM users WHERE pseudo = ?";
                                             try (PreparedStatement stmt2 = conn.prepareStatement(sql)) {
@@ -384,7 +544,8 @@ public class User {
                                                             stmt3.setInt(2, userId);
                                                             int rowsAffected = stmt3.executeUpdate();
                                                             if (rowsAffected > 0) {
-                                                                JOptionPane.showMessageDialog((Component) frame, "Pseudo modifié avec succès",
+                                                                JOptionPane.showMessageDialog((Component) frame,
+                                                                        "Pseudo modifié avec succès",
                                                                         "Succès", JOptionPane.INFORMATION_MESSAGE);
                                                                 new User().userList(frame);
                                                             } else {
@@ -412,12 +573,14 @@ public class User {
                                                 e.printStackTrace();
                                             }
                                         } else {
-                                            JOptionPane.showMessageDialog((Component) frame, "Veuillez saisir un pseudo",
+                                            JOptionPane.showMessageDialog((Component) frame,
+                                                    "Veuillez saisir un pseudo",
                                                     "Erreur", JOptionPane.ERROR_MESSAGE);
                                         }
                                         break;
                                     case 1:
-                                        String newEMail = JOptionPane.showInputDialog((Component) frame, "Nouvel e-mail");
+                                        String newEMail = JOptionPane.showInputDialog((Component) frame,
+                                                "Nouvel e-mail");
                                         if (newEMail != null) {
                                             sql = "SELECT * FROM users WHERE email = ?";
                                             try (PreparedStatement stmt2 = conn.prepareStatement(sql)) {
@@ -434,7 +597,8 @@ public class User {
                                                             stmt3.setInt(2, userId);
                                                             int rowsAffected = stmt3.executeUpdate();
                                                             if (rowsAffected > 0) {
-                                                                JOptionPane.showMessageDialog((Component) frame, "E-Mail modifié avec succès",
+                                                                JOptionPane.showMessageDialog((Component) frame,
+                                                                        "E-Mail modifié avec succès",
                                                                         "Succès", JOptionPane.INFORMATION_MESSAGE);
                                                                 new User().userList(frame);
                                                             } else {
@@ -462,30 +626,37 @@ public class User {
                                                 e.printStackTrace();
                                             }
                                         } else {
-                                            JOptionPane.showMessageDialog((Component) frame, "Veuillez saisir un e-mail",
+                                            JOptionPane.showMessageDialog((Component) frame,
+                                                    "Veuillez saisir un e-mail",
                                                     "Erreur", JOptionPane.ERROR_MESSAGE);
                                         }
                                         break;
                                     case 2:
                                         JPasswordField passwordField = new JPasswordField(10);
                                         JPasswordField confirmPasswordField = new JPasswordField(10);
-                                        passwordField.setEchoChar('●'); // Masque le texte saisi dans le champ de mot de passe
-                                        confirmPasswordField.setEchoChar('●'); // Masque le texte saisi dans le champ de mot de passe
-                                        Object[] message2 = { "Code:", passwordField, "Confirmer le code:", confirmPasswordField };
-                                        int option2 = JOptionPane.showConfirmDialog((Component) frame, message2, "Modifier le mot de passe",
+                                        passwordField.setEchoChar('●'); // Masque le texte saisi dans le champ de mot de
+                                                                        // passe
+                                        confirmPasswordField.setEchoChar('●'); // Masque le texte saisi dans le champ de
+                                                                               // mot de passe
+                                        Object[] message2 = { "Code:", passwordField, "Confirmer le code:",
+                                                confirmPasswordField };
+                                        int option2 = JOptionPane.showConfirmDialog((Component) frame, message2,
+                                                "Modifier le mot de passe",
                                                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
                                         if (option2 == JOptionPane.OK_OPTION) {
                                             char[] password = passwordField.getPassword();
                                             char[] confirmPassword = confirmPasswordField.getPassword();
                                             if (new String(password).equals(new String(confirmPassword))) {
-                                                String hashedPassword = BCrypt.hashpw(new String(password), "$2a$10$VM/GfVScMMgdLVtHwABv6u");
+                                                String hashedPassword = BCrypt.hashpw(new String(password),
+                                                        "$2a$10$VM/GfVScMMgdLVtHwABv6u");
                                                 sql = "UPDATE users SET password = ? WHERE id = ?";
                                                 try (PreparedStatement stmt2 = conn.prepareStatement(sql)) {
                                                     stmt2.setString(1, hashedPassword);
                                                     stmt2.setInt(2, userId);
                                                     int rowsAffected = stmt2.executeUpdate();
                                                     if (rowsAffected > 0) {
-                                                        JOptionPane.showMessageDialog((Component) frame, "Mot de passe modifié avec succès",
+                                                        JOptionPane.showMessageDialog((Component) frame,
+                                                                "Mot de passe modifié avec succès",
                                                                 "Succès", JOptionPane.INFORMATION_MESSAGE);
                                                         new User().userList(frame);
                                                     } else {
@@ -500,7 +671,8 @@ public class User {
                                                     e.printStackTrace();
                                                 }
                                             } else {
-                                                JOptionPane.showMessageDialog((Component) frame, "Les mots de passe ne correspondent pas",
+                                                JOptionPane.showMessageDialog((Component) frame,
+                                                        "Les mots de passe ne correspondent pas",
                                                         "Erreur", JOptionPane.ERROR_MESSAGE);
                                             }
                                         }
@@ -509,17 +681,20 @@ public class User {
                                         sql = "SELECT * FROM store";
                                         try (PreparedStatement stmt3 = conn.prepareStatement(sql)) {
                                             try (ResultSet rs3 = stmt3.executeQuery()) {
-                                                JComboBox<String> roleField = new JComboBox<>(new String[] { "EMPLOYEE", "MANAGER", "ADMIN" });
+                                                JComboBox<String> roleField = new JComboBox<>(
+                                                        new String[] { "EMPLOYEE", "MANAGER", "ADMIN" });
                                                 JComboBox<String> storeList = new JComboBox<>();
                                                 storeList.addItem("Sélectionnez un magasin");
                                                 while (rs3.next()) {
-                                                    storeList.addItem(rs3.getString("id") + " - " + rs3.getString("name"));
+                                                    storeList.addItem(
+                                                            rs3.getString("id") + " - " + rs3.getString("name"));
                                                 }
                                                 Object[] message3 = {
                                                         "Rôle:", roleField,
                                                         "Magasin:", storeList,
                                                 };
-                                                int option3 = JOptionPane.showConfirmDialog((Component) frame, message3, "Modifier le rôle et le magasin d'un utilisateur",
+                                                int option3 = JOptionPane.showConfirmDialog((Component) frame, message3,
+                                                        "Modifier le rôle et le magasin d'un utilisateur",
                                                         JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
                                                 if (option3 == JOptionPane.OK_OPTION) {
                                                     String role = (String) roleField.getSelectedItem();
@@ -529,8 +704,10 @@ public class User {
                                                         String[] idStore = selectedStore.split(" - ");
                                                         storeId = Integer.parseInt(idStore[0]);
                                                     }
-                                                    if ("Sélectionnez un magasin".equals(selectedStore) && !"ADMIN".equals(role)) {
-                                                        JOptionPane.showMessageDialog((Component) frame, "Le rôle MANAGER ou EMPLOYEE doit être associé à un magasin",
+                                                    if ("Sélectionnez un magasin".equals(selectedStore)
+                                                            && !"ADMIN".equals(role)) {
+                                                        JOptionPane.showMessageDialog((Component) frame,
+                                                                "Le rôle MANAGER ou EMPLOYEE doit être associé à un magasin",
                                                                 "Erreur", JOptionPane.ERROR_MESSAGE);
                                                     } else {
                                                         // Insertion de l'utilisateur dans la table des utilisateurs
@@ -627,7 +804,8 @@ public class User {
                     JComboBox<String> userList = new JComboBox<>();
                     userList.addItem("Sélectionnez un utilisateur");
                     while (rs.next()) {
-                        userList.addItem(rs.getString("id") + " - " + rs.getString("pseudo") + " - " + rs.getString("email"));
+                        userList.addItem(
+                                rs.getString("id") + " - " + rs.getString("pseudo") + " - " + rs.getString("email"));
                     }
                     Object[] message = {
                             "Utilisateur:", userList,

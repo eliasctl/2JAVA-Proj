@@ -28,8 +28,8 @@ public class Main {
         menu1.add(demarrer);
         JMenuItem fin = new JMenuItem("Fin");
         menu1.add(fin);
-        JMenuItem connexion = new JMenuItem("Personnel du magasin");
-        menu1.add(connexion);
+        JMenuItem userStore = new JMenuItem("Personnel du magasin");
+        menu1.add(userStore);
         /* Ajouer le menu1 à la bar du menu */
         menuBar.add(menu1);
 
@@ -52,6 +52,10 @@ public class Main {
         menuAdmin.add(whitelistList);
         JMenuItem storeList = new JMenuItem("Liste des Magasins");
         menuAdmin.add(storeList);
+        JMenuItem changeStore = new JMenuItem("Changer de Magasin");
+        menuAdmin.add(changeStore);
+        JMenuItem inventoryList = new JMenuItem("Voir les inventaires");
+        menuAdmin.add(inventoryList);
         /* Ajouter le menuAdmin à la bar du menu */
         menuBar.add(menuAdmin);
         /* Ajouter la bar du menu à la frame */
@@ -75,6 +79,13 @@ public class Main {
         registrationButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 new User().registration(frame);
+            }
+        });
+
+        /* Ajouter un bouton pour voir le personnel du magasin */
+        userStore.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                new Store().userStore(frame);
             }
         });
 
@@ -114,6 +125,18 @@ public class Main {
         storeList.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 new Admin().storeList(frame);
+            }
+        });
+
+        changeStore.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                new Store().selectStore(frame);
+            }
+        });
+
+        inventoryList.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                new Admin().inventoryList(frame);
             }
         });
 

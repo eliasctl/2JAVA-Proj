@@ -18,6 +18,7 @@ import java.awt.event.*;
 
 public class Admin {
     public void storeList(Object frame) {
+        User.page = "storeList";
         try (Connection conn = DriverManager.getConnection(Conf.DB_URL, Conf.DB_USER, Conf.DB_PASSWORD)) {
             ((javax.swing.JFrame) frame).getContentPane().removeAll();
             Button selectActionStore = new Button("Effectuer une action pour un magasin");
@@ -234,6 +235,7 @@ public class Admin {
     }
 
     public void whitelistList(Object frame) {
+        User.page = "whitelistList";
         try (Connection conn = DriverManager.getConnection(Conf.DB_URL, Conf.DB_USER, Conf.DB_PASSWORD)) {
             ((javax.swing.JFrame) frame).getContentPane().removeAll();
             Button selectActionWhitelist = new Button("Effectuer une modification sur la whitelist");
@@ -291,151 +293,13 @@ public class Admin {
                 JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
         switch (response) {
             case 0:
-                new Admin().addUser(frame);
+                new User().addUser(frame);
                 break;
             case 1:
                 new Admin().deleteWhitelist(frame);
                 break;
             default:
                 break;
-        }
-    }
-
-    private void addUser(Object frame) {
-        try (Connection conn = DriverManager.getConnection(Conf.DB_URL, Conf.DB_USER, Conf.DB_PASSWORD)) {
-            String sqlSelect = "SELECT * FROM store";
-            try (PreparedStatement stmtSelect = conn.prepareStatement(sqlSelect)) {
-                try (ResultSet rs = stmtSelect.executeQuery()) {
-                    JTextField emailField = new JTextField(10);
-                    JComboBox<String> roleField = new JComboBox<>(new String[] { "EMPLOYEE", "MANAGER", "ADMIN" });
-                    JComboBox<String> storeList = new JComboBox<>();
-                    storeList.addItem("Sélectionnez un magasin");
-                    while (rs.next()) {
-                        storeList.addItem(rs.getString("id") + " - " + rs.getString("name"));
-                    }
-                    Object[] message = {
-                            "E-Mail:", emailField,
-                            "Rôle:", roleField,
-                            "Magasin:", storeList,
-                    };
-                    int option = JOptionPane.showConfirmDialog((Component) frame, message, "Ajouter un utilisateur",
-                            JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-                    if (option == JOptionPane.OK_OPTION) {
-                        String email = emailField.getText();
-                        String role = (String) roleField.getSelectedItem();
-                        String selectedStore = storeList.getSelectedItem().toString();
-                        int storeId = 0;
-                        if (!"Sélectionnez un magasin".equals(selectedStore)) {
-                            String[] idStore = selectedStore.split(" - ");
-                            storeId = Integer.parseInt(idStore[0]);
-                        }
-                        if (email.isEmpty() || ("Sélectionnez un magasin".equals(selectedStore) && !"ADMIN".equals(role))) {
-                            JOptionPane.showMessageDialog((Component) frame, "Veuillez remplir tous les champs, sauf le magasin pour un ADMIN",
-                                    "Erreur", JOptionPane.ERROR_MESSAGE);
-                        } else {
-                            // Vérifier que l'email n'est pas déjà utilisé par un utilisateur
-                            String sql = "SELECT * FROM users WHERE email = ?";
-                            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                                stmt.setString(1, email);
-                                try (ResultSet rs2 = stmt.executeQuery()) {
-                                    if (rs2.next()) {
-                                        JOptionPane.showMessageDialog((Component) frame, "Cet e-mail est déjà utilisé",
-                                                "Erreur", JOptionPane.ERROR_MESSAGE);
-                                    } else {
-                                        // Vérifier que l'email est dans la whitelist
-                                        String sqlWhitelist = "SELECT * FROM whitelist WHERE email = ?";
-                                        try (PreparedStatement stmtWhitelist = conn.prepareStatement(sqlWhitelist)) {
-                                            stmtWhitelist.setString(1, email);
-                                            try (ResultSet rs3 = stmtWhitelist.executeQuery()) {
-                                                if (rs3.next()) {
-                                                    JOptionPane.showMessageDialog((Component) frame,
-                                                            "Cet e-mail est déjà dans la whitelist",
-                                                            "Erreur", JOptionPane.ERROR_MESSAGE);
-                                                } else {
-                                                    // Insertion de l'utilisateur dans la table des utilisateurs
-                                                    if ("Sélectionnez un magasin".equals(selectedStore)) {
-                                                        String sqlInsert = "INSERT INTO whitelist (email, role) VALUES (?, ?)";
-                                                        try (PreparedStatement stmtInsert = conn
-                                                                .prepareStatement(sqlInsert)) {
-                                                            stmtInsert.setString(1, email);
-                                                            stmtInsert.setString(2, role);
-                                                            int rowsAffected = stmtInsert.executeUpdate();
-                                                            if (rowsAffected > 0) {
-                                                                JOptionPane.showMessageDialog((Component) frame,
-                                                                        "Utilisateur ajouté avec succès",
-                                                                        "Succès", JOptionPane.INFORMATION_MESSAGE);
-                                                                new Admin().whitelistList(frame);
-                                                            } else {
-                                                                JOptionPane.showMessageDialog((Component) frame,
-                                                                        "Erreur lors de l'ajout de l'utilisateur",
-                                                                        "Erreur", JOptionPane.ERROR_MESSAGE);
-                                                            }
-                                                        } catch (SQLException e) {
-                                                            JOptionPane.showMessageDialog((Component) frame,
-                                                                    "Erreur lors de l'ajout de l'utilisateur",
-                                                                    "Erreur", JOptionPane.ERROR_MESSAGE);
-                                                            e.printStackTrace();
-                                                        }
-                                                    } else {
-                                                        String sqlInsert = "INSERT INTO whitelist (email, role, store) VALUES (?, ?, ?)";
-                                                        try (PreparedStatement stmtInsert = conn
-                                                                .prepareStatement(sqlInsert)) {
-                                                            stmtInsert.setString(1, email);
-                                                            stmtInsert.setString(2, role);
-                                                            stmtInsert.setInt(3, storeId);
-                                                            int rowsAffected = stmtInsert.executeUpdate();
-                                                            if (rowsAffected > 0) {
-                                                                JOptionPane.showMessageDialog((Component) frame,
-                                                                        "Utilisateur ajouté avec succès",
-                                                                        "Succès", JOptionPane.INFORMATION_MESSAGE);
-                                                                new Admin().whitelistList(frame);
-                                                            } else {
-                                                                JOptionPane.showMessageDialog((Component) frame,
-                                                                        "Erreur lors de l'ajout de l'utilisateur",
-                                                                        "Erreur", JOptionPane.ERROR_MESSAGE);
-                                                            }
-                                                        } catch (SQLException e) {
-                                                            JOptionPane.showMessageDialog((Component) frame,
-                                                                    "Erreur lors de l'ajout de l'utilisateur",
-                                                                    "Erreur", JOptionPane.ERROR_MESSAGE);
-                                                            e.printStackTrace();
-                                                        }
-                                                    }
-                                                }
-                                            } catch (SQLException e) {
-                                                JOptionPane.showMessageDialog((Component) frame,
-                                                        "Erreur lors de la vérification de l'email dans la whitelist",
-                                                        "Erreur", JOptionPane.ERROR_MESSAGE);
-                                                e.printStackTrace();
-                                            }
-                                        }
-                                    }
-                                } catch (SQLException e) {
-                                    JOptionPane.showMessageDialog((Component) frame,
-                                            "Erreur lors de la vérification de l'email dans la table des utilisateurs",
-                                            "Erreur", JOptionPane.ERROR_MESSAGE);
-                                    e.printStackTrace();
-                                }
-                            }
-                        }
-                    }
-                } catch (SQLException e) {
-                    JOptionPane.showMessageDialog((Component) frame,
-                            "Une erreur s'est produite lors de la récupération des magasins",
-                            "Erreur", JOptionPane.ERROR_MESSAGE);
-                    e.printStackTrace();
-                }
-            } catch (SQLException e) {
-                JOptionPane.showMessageDialog((Component) frame,
-                        "Une erreur s'est produite lors de la récupération des magasins",
-                        "Erreur", JOptionPane.ERROR_MESSAGE);
-                e.printStackTrace();
-            }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog((Component) frame,
-                    "Une erreur s'est produite lors de la connexion à la base de donnée",
-                    "Erreur", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
         }
     }
 
@@ -460,7 +324,8 @@ public class Admin {
                             return;
                         }
                         String[] idEmail = userList.getSelectedItem().toString().split(" - ");
-                        try (Connection conn2 = DriverManager.getConnection(Conf.DB_URL, Conf.DB_USER, Conf.DB_PASSWORD)) {
+                        try (Connection conn2 = DriverManager.getConnection(Conf.DB_URL, Conf.DB_USER,
+                                Conf.DB_PASSWORD)) {
                             String sqlDelete = "DELETE FROM whitelist WHERE id = ?";
                             try (PreparedStatement stmtDelete = conn2.prepareStatement(sqlDelete)) {
                                 stmtDelete.setString(1, idEmail[0]);
@@ -492,4 +357,73 @@ public class Admin {
         }
     }
 
+    public void inventoryList(Object frame) {
+        User.page = "inventoryList";
+        try (Connection conn = DriverManager.getConnection(Conf.DB_URL, Conf.DB_USER, Conf.DB_PASSWORD)) {
+            ((javax.swing.JFrame) frame).getContentPane().removeAll();
+            ((javax.swing.JFrame) frame).setLayout(new BorderLayout());
+            String sql = "SELECT DISTINCT inventory FROM items";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                try (ResultSet rs = stmt.executeQuery()) {
+                    // faire un tableau avec les inventaires et le nombre d'articles à l'intérieur
+                    String[] columnNames = { "Inventaire", "Nombre d'articles" };
+                    String[][] data = new String[0][0];
+                    while (rs.next()) {
+                        String inventory = rs.getString("inventory");
+                        sql = "SELECT name FROM store WHERE id = ?";
+                        try (PreparedStatement stmtStore = conn.prepareStatement(sql)) {
+                            stmtStore.setString(1, inventory);
+                            try (ResultSet rsStore = stmtStore.executeQuery()) {
+                                if (rsStore.next()) {
+                                    String store = rsStore.getString("name");
+                                    String sqlCount = "SELECT COUNT(*) FROM items WHERE inventory = ?";
+                                    try (PreparedStatement stmtCount = conn.prepareStatement(sqlCount)) {
+                                        stmtCount.setString(1, inventory);
+                                        try (ResultSet rsCount = stmtCount.executeQuery()) {
+                                            if (rsCount.next()) {
+                                                String count = rsCount.getString(1);
+                                                String[][] newData = new String[data.length + 1][2];
+                                                for (int i = 0; i < data.length; i++) {
+                                                    for (int j = 0; j < 2; j++) { // Correction de la taille du tableau
+                                                        newData[i][j] = data[i][j];
+                                                    }
+                                                }
+                                                data = newData; // Mise à jour de la référence du tableau
+                                                data[data.length - 1][0] = store;
+                                                data[data.length - 1][1] = count;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    JTable table = new JTable(data, columnNames) {
+                        public boolean isCellEditable(int row, int column) {
+                            return false;
+                        }
+                    };
+                    JScrollPane scrollPane = new JScrollPane(table);
+                    ((javax.swing.JFrame) frame).add(new JLabel("Inventaires"), BorderLayout.NORTH);
+                    // Ajouter un bouton pour effectuer une action sur un inventaire
+                    Button selectActionInventory = new Button("Supprimer un inventaire");
+                    selectActionInventory.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            new Admin().deleteInventory(frame);
+                        }
+                    });
+                    ((javax.swing.JFrame) frame).add(selectActionInventory, BorderLayout.SOUTH);
+                    ((javax.swing.JFrame) frame).add(scrollPane, BorderLayout.CENTER);
+                    ((javax.swing.JFrame) frame).revalidate();
+                }
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Erreur lors de la récupération des inventaires",
+                    "Erreur", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void deleteInventory(Object frame) {
+        //
+    }
 }
