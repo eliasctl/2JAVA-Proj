@@ -71,31 +71,42 @@ public class Store {
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setInt(1, User.store);
                 try (ResultSet rs = stmt.executeQuery()) {
-                    rs.next();
-                    sql = "SELECT * FROM users WHERE store = ?";
-                    try (PreparedStatement stmt2 = conn.prepareStatement(sql)) {
-                        stmt2.setInt(1, User.store);
-                        try (ResultSet rs2 = stmt2.executeQuery()) {
-                            String[] columnNames = { "Pseudo", "E-Mail", "Role" };
-                            Object[][] data = new String[0][0];
-                            while (rs2.next()) {
-                                data = new String[rs2.getRow()][3];
-                                data[rs2.getRow() - 1][0] = rs2.getString("pseudo");
-                                data[rs2.getRow() - 1][1] = rs2.getString("email");
-                                data[rs2.getRow() - 1][2] = rs2.getString("role");
-                            }
-                            JTable table = new JTable(data, columnNames) {
-                                public boolean isCellEditable(int row, int column) {
-                                    return false;
+                    if (rs.next()) {
+                        String storeName = rs.getString("name");
+                        sql = "SELECT * FROM users WHERE store = ?";
+                        try (PreparedStatement stmt2 = conn.prepareStatement(sql)) {
+                            stmt2.setInt(1, User.store);
+                            try (ResultSet rs2 = stmt2.executeQuery()) {
+                                // Créer une liste pour stocker les données
+                                List<String[]> dataList = new ArrayList<>();
+                                while (rs2.next()) {
+                                    // Ajouter les données de chaque ligne dans la liste
+                                    String[] rowData = {
+                                            rs2.getString("pseudo"),
+                                            rs2.getString("email"),
+                                            rs2.getString("role")
+                                    };
+                                    dataList.add(rowData);
                                 }
-                            };
-                            JScrollPane scrollPane = new JScrollPane(table);
-                            ((javax.swing.JFrame) frame).add(
-                                    new JLabel("Liste personnel du magasin : " + rs.getString("name")),
-                                    BorderLayout.NORTH);
-                            ((javax.swing.JFrame) frame).add(scrollPane, BorderLayout.CENTER);
-                            ((javax.swing.JFrame) frame).revalidate();
+                                // Convertir la liste en tableau 2D pour l'affichage dans le tableau JTable
+                                Object[][] data = dataList.toArray(new String[0][0]);
+                                String[] columnNames = { "Pseudo", "E-Mail", "Role" };
+                                JTable table = new JTable(data, columnNames) {
+                                    public boolean isCellEditable(int row, int column) {
+                                        return false;
+                                    }
+                                };
+                                JScrollPane scrollPane = new JScrollPane(table);
+                                ((javax.swing.JFrame) frame).add(
+                                        new JLabel("Liste personnel du magasin : " + storeName),
+                                        BorderLayout.NORTH);
+                                ((javax.swing.JFrame) frame).add(scrollPane, BorderLayout.CENTER);
+                                ((javax.swing.JFrame) frame).revalidate();
+                            }
                         }
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Aucun magasin trouvé avec l'identifiant " + User.store,
+                                "Erreur", JOptionPane.ERROR_MESSAGE);
                     }
                 }
             }
@@ -122,7 +133,7 @@ public class Store {
                         try (PreparedStatement stmt2 = conn.prepareStatement(sql)) {
                             stmt2.setInt(1, User.store);
                             try (ResultSet rs2 = stmt2.executeQuery()) {
-                                List<String[]> dataList = new ArrayList<>(); 
+                                List<String[]> dataList = new ArrayList<>();
                                 while (rs2.next()) {
                                     String[] itemData = new String[3];
                                     itemData[0] = rs2.getString("name");
@@ -256,27 +267,32 @@ public class Store {
                 try (ResultSet rs = stmt.executeQuery()) {
                     JComboBox<String> item = new JComboBox<>();
                     while (rs.next()) {
-                        item.addItem(rs.getString("id") + " - " + rs.getString("name") + " - " + rs.getString("price") + " €");
+                        item.addItem(rs.getString("id") + " - " + rs.getString("name") + " - " + rs.getString("price")
+                                + " €");
                     }
-                    Object[] message = {"Choisir l'article:", item};
-                    int option = JOptionPane.showConfirmDialog(null, message, "Choisir l'article", JOptionPane.OK_CANCEL_OPTION);
+                    Object[] message = { "Choisir l'article:", item };
+                    int option = JOptionPane.showConfirmDialog(null, message, "Choisir l'article",
+                            JOptionPane.OK_CANCEL_OPTION);
                     if (option == JOptionPane.OK_OPTION) {
                         String[] itemData = item.getSelectedItem().toString().split(" - ");
                         String itemName = itemData[1];
                         String itemPrice = itemData[2].replace(" €", "");
-                        
+
                         JTextField name = new JTextField(itemName);
                         JTextField price = new JTextField(itemPrice);
-                        Object[] message2 = {"Nom:", name, "Prix:", price};
-                        int option2 = JOptionPane.showConfirmDialog(null, message2, "Modifier l'article", JOptionPane.OK_CANCEL_OPTION);
+                        Object[] message2 = { "Nom:", name, "Prix:", price };
+                        int option2 = JOptionPane.showConfirmDialog(null, message2, "Modifier l'article",
+                                JOptionPane.OK_CANCEL_OPTION);
                         if (option2 == JOptionPane.OK_OPTION) {
                             if (name.getText().isEmpty() || price.getText().isEmpty()) {
-                                JOptionPane.showMessageDialog(null, "Tous les champs sont obligatoires", "Erreur", JOptionPane.ERROR_MESSAGE);
+                                JOptionPane.showMessageDialog(null, "Tous les champs sont obligatoires", "Erreur",
+                                        JOptionPane.ERROR_MESSAGE);
                                 return;
                             }
                             price.setText(price.getText().replace(",", "."));
                             if (!price.getText().matches("^[0-9]+(\\.[0-9]+)?$")) {
-                                JOptionPane.showMessageDialog(null, "Le prix doit être un nombre positif", "Erreur", JOptionPane.ERROR_MESSAGE);
+                                JOptionPane.showMessageDialog(null, "Le prix doit être un nombre positif", "Erreur",
+                                        JOptionPane.ERROR_MESSAGE);
                                 return;
                             }
                             sql = "UPDATE items SET name = ?, price = ? WHERE id = ?";
@@ -285,7 +301,8 @@ public class Store {
                                 stmt2.setFloat(2, Float.parseFloat(price.getText()));
                                 stmt2.setInt(3, Integer.parseInt(itemData[0]));
                                 stmt2.executeUpdate();
-                                JOptionPane.showMessageDialog(null, "Article modifié avec succès", "Succès", JOptionPane.INFORMATION_MESSAGE);
+                                JOptionPane.showMessageDialog(null, "Article modifié avec succès", "Succès",
+                                        JOptionPane.INFORMATION_MESSAGE);
                                 new Store().itemList(frame);
                             }
                         }
@@ -293,7 +310,8 @@ public class Store {
                 }
             }
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Erreur lors de la récupération des articles", "Erreur", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Erreur lors de la récupération des articles", "Erreur",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -307,22 +325,26 @@ public class Store {
                     while (rs.next()) {
                         item.addItem(rs.getString("id") + " - " + rs.getString("name") + " - " + rs.getString("stock"));
                     }
-                    Object[] message = {"Choisir l'article:", item};
-                    int option = JOptionPane.showConfirmDialog(null, message, "Choisir l'article", JOptionPane.OK_CANCEL_OPTION);
+                    Object[] message = { "Choisir l'article:", item };
+                    int option = JOptionPane.showConfirmDialog(null, message, "Choisir l'article",
+                            JOptionPane.OK_CANCEL_OPTION);
                     if (option == JOptionPane.OK_OPTION) {
                         String[] itemData = item.getSelectedItem().toString().split(" - ");
                         String itemStock = itemData[2];
-                        
+
                         JTextField stock = new JTextField(itemStock);
-                        Object[] message2 = {"Stock:", stock};
-                        int option2 = JOptionPane.showConfirmDialog(null, message2, "Modifier le stock", JOptionPane.OK_CANCEL_OPTION);
+                        Object[] message2 = { "Stock:", stock };
+                        int option2 = JOptionPane.showConfirmDialog(null, message2, "Modifier le stock",
+                                JOptionPane.OK_CANCEL_OPTION);
                         if (option2 == JOptionPane.OK_OPTION) {
                             if (stock.getText().isEmpty()) {
-                                JOptionPane.showMessageDialog(null, "Le stock est obligatoire", "Erreur", JOptionPane.ERROR_MESSAGE);
+                                JOptionPane.showMessageDialog(null, "Le stock est obligatoire", "Erreur",
+                                        JOptionPane.ERROR_MESSAGE);
                                 return;
                             }
                             if (!stock.getText().matches("^[0-9]+$")) {
-                                JOptionPane.showMessageDialog(null, "Le stock doit être un nombre entier positif", "Erreur", JOptionPane.ERROR_MESSAGE);
+                                JOptionPane.showMessageDialog(null, "Le stock doit être un nombre entier positif",
+                                        "Erreur", JOptionPane.ERROR_MESSAGE);
                                 return;
                             }
                             sql = "UPDATE items SET stock = ? WHERE id = ?";
@@ -330,7 +352,8 @@ public class Store {
                                 stmt2.setInt(1, Integer.parseInt(stock.getText()));
                                 stmt2.setInt(2, Integer.parseInt(itemData[0]));
                                 stmt2.executeUpdate();
-                                JOptionPane.showMessageDialog(null, "Stock modifié avec succès", "Succès", JOptionPane.INFORMATION_MESSAGE);
+                                JOptionPane.showMessageDialog(null, "Stock modifié avec succès", "Succès",
+                                        JOptionPane.INFORMATION_MESSAGE);
                                 new Store().itemList(frame);
                             }
                         }
@@ -338,7 +361,8 @@ public class Store {
                 }
             }
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Erreur lors de la récupération des articles", "Erreur", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Erreur lors de la récupération des articles", "Erreur",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -352,22 +376,25 @@ public class Store {
                     while (rs.next()) {
                         item.addItem(rs.getString("id") + " - " + rs.getString("name"));
                     }
-                    Object[] message = {"Choisir l'article:", item};
-                    int option = JOptionPane.showConfirmDialog(null, message, "Choisir l'article", JOptionPane.OK_CANCEL_OPTION);
+                    Object[] message = { "Choisir l'article:", item };
+                    int option = JOptionPane.showConfirmDialog(null, message, "Choisir l'article",
+                            JOptionPane.OK_CANCEL_OPTION);
                     if (option == JOptionPane.OK_OPTION) {
                         int itemId = Integer.parseInt(item.getSelectedItem().toString().split(" - ")[0]);
                         sql = "DELETE FROM items WHERE id = ?";
                         try (PreparedStatement stmt2 = conn.prepareStatement(sql)) {
                             stmt2.setInt(1, itemId);
                             stmt2.executeUpdate();
-                            JOptionPane.showMessageDialog(null, "Article supprimé avec succès", "Succès", JOptionPane.INFORMATION_MESSAGE);
+                            JOptionPane.showMessageDialog(null, "Article supprimé avec succès", "Succès",
+                                    JOptionPane.INFORMATION_MESSAGE);
                             new Store().itemList(frame);
                         }
                     }
                 }
             }
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Erreur lors de la récupération des articles", "Erreur", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Erreur lors de la récupération des articles", "Erreur",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 

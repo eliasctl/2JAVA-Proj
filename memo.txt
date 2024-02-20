@@ -5,11 +5,3 @@ SET store = JSON_ARRAY(
     JSON_OBJECT('id', 2, 'role_name', 'employee')
 )
 WHERE id = 1;
-
-Voir son propre profil
-Modifier son propre profil
-Permettre la modification d'un utilisateurs
-préremplir avec les anciennes valeurs
-
-
-faire tous les magasins

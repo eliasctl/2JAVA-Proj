@@ -23,6 +23,7 @@ public class User {
     public static Integer store = null;
 
     public void connection(Object frame) {
+        // Créer les champs de saisie pour l'email et le mot de passe
         JTextField eMailField = new JTextField(10);
         JPasswordField passwordField = new JPasswordField(10);
         passwordField.setEchoChar('●'); // Masque le texte saisi dans le champ de mot de passe
@@ -946,11 +947,36 @@ public class User {
                                 "Rôle:", role,
                                 "Magasin:", storeName,
                         };
-                        // bouton pour fermer un un pour modifier
+                        String[] options = {  "Modifier", "Fermer", "Supprimer"};
                         int option = JOptionPane.showOptionDialog((Component) frame, message, "Profil",
-                                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null,
-                                new String[] { "Modifier", "Fermer" }, null);
-                        if (option == JOptionPane.OK_OPTION) {
+                                JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
+                        if (option == JOptionPane.CANCEL_OPTION) {
+                            int response = JOptionPane.showConfirmDialog((Component) frame,
+                                    "Voulez-vous vraiment supprimer votre profil ?",
+                                    "Confirmation", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                            if (response == JOptionPane.YES_OPTION) {
+                                sql = "DELETE FROM users WHERE id = ?";
+                                try (PreparedStatement stmt3 = conn.prepareStatement(sql)) {
+                                    stmt3.setInt(1, Integer.parseInt(User.id));
+                                    int rowsAffected = stmt3.executeUpdate();
+                                    if (rowsAffected > 0) {
+                                        JOptionPane.showMessageDialog((Component) frame,
+                                                "Profil supprimé avec succès",
+                                                "Succès", JOptionPane.INFORMATION_MESSAGE);
+                                        new User().disconnection(frame);
+                                    } else {
+                                        JOptionPane.showMessageDialog((Component) frame,
+                                                "Erreur lors de la suppression du profil",
+                                                "Erreur", JOptionPane.ERROR_MESSAGE);
+                                    }
+                                } catch (SQLException e) {
+                                    JOptionPane.showMessageDialog((Component) frame,
+                                            "Erreur lors de la suppression du profil",
+                                            "Erreur", JOptionPane.ERROR_MESSAGE);
+                                    e.printStackTrace();
+                                }
+                            }
+                        } else if (option == JOptionPane.OK_OPTION) {
                             // Modifier le profil
                             JTextField pseudoField = new JTextField(10);
                             JTextField emailField = new JTextField(10);

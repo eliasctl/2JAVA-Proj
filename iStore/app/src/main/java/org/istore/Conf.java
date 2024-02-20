@@ -5,10 +5,11 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import javax.swing.JOptionPane;
+import javax.swing.JTextField;
 
 public class Conf {
     // prompt au lancement de l'application pour demander quelle base de données utiliser
-    public static String[] prompt = { "Choisir une base de données", "Local", "Eli" };
+    public static String[] prompt = { "Choisir une base de données", "Serveur", "Autre"};
     public static String db = prompt[1];
     // Constantes de connexion à la base de données
     public static String DB_URL = "";
@@ -23,11 +24,31 @@ public class Conf {
             System.exit(0);
         }
         // si db est Local on utilise la base de données locale
-        if (db.equals("Local")) {
-            // Constantes de connexion à la base de données
-            DB_URL = "jdbc:mysql://localhost:8889/java";
-            DB_USER = "root";
-            DB_PASSWORD = "root";
+        if (db.equals("Autre")) {
+            // Demander à l'utilisateur de renseigner les informations de connexion à la base de données
+            JTextField url = new JTextField(20);
+            JTextField user = new JTextField(20);
+            JTextField password = new JTextField(20);
+            // Création de la fenêtre de dialogue
+            Object[] message = { "URL (jdbc:mysql://url:port/base):", url, "Utilisateur:", user, "Mot de passe:", password };
+            int option = JOptionPane.showConfirmDialog(null, message, "Connexion à la base de données",
+                    JOptionPane.OK_CANCEL_OPTION);
+            // Si l'utilisateur clique sur OK, on récupère les informations de connexion
+            if (option == JOptionPane.OK_OPTION) {
+                // Constantes de connexion à la base de données
+                DB_URL = url.getText();
+                DB_USER = user.getText();
+                DB_PASSWORD = password.getText();
+                // Connexion à la base de données
+                try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+                    System.out.println("Connexion à la base de données réussie");
+                } catch (SQLException e) {
+                    System.out.println("Erreur de connexion à la base de données");
+                    e.printStackTrace();
+                }
+            } else {
+                System.exit(0);
+            }
             // Connexion à la base de données
             try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
                 System.out.println("Connexion à la base de données réussie");
@@ -35,7 +56,7 @@ public class Conf {
                 System.out.println("Erreur de connexion à la base de données");
                 e.printStackTrace();
             }
-        } else if (db.equals("Eli")) {
+        } else if (db.equals("Serveur")) {
             // Constantes de connexion à la base de données
             DB_URL = "jdbc:mysql://eliascastel.ddns.net:3306/java";
             DB_USER = "java";
