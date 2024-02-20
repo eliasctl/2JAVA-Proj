@@ -10,7 +10,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-import org.checkerframework.checker.units.qual.s;
 import org.mindrot.jbcrypt.BCrypt;
 
 public class User {
