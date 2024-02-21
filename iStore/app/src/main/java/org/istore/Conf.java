@@ -25,15 +25,15 @@ public class Conf {
     /**
      * DB_URL URL de la base de données
      */
-    public static String DB_URL = "";
+    public static String DB_URL = "jdbc:mysql://eliascastel.ddns.net:3306/java";
     /**
      * DB_USER Utilisateur de la base de données
      */
-    public static String DB_USER = "";
+    public static String DB_USER = "java";
     /**
      * DB_PASSWORD Mot de passe de la base de données
      */
-    public static String DB_PASSWORD = "";
+    public static String DB_PASSWORD = "!pn!XrZLgt-pn2RP";
     /**
      * selectTataBase Méthode pour sélectionner la base de données à utiliser
      */

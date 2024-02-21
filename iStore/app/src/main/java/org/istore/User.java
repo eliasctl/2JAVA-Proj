@@ -118,7 +118,7 @@ public class User {
             registration(frame);
         } else if (option == 2) {
             // Gérer le code oublié
-            JOptionPane.showMessageDialog(null, "Veuillez contacter un Administrateur", "Code oublié",
+            JOptionPane.showMessageDialog(null, "Rendez-vous sur https://eliascastel.ddns.net/istore/", "Code oublié",
                     JOptionPane.ERROR_MESSAGE);
         } else {
             System.out.println("Login canceled!");

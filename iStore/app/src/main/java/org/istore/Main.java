@@ -162,7 +162,7 @@ public class Main {
         frame.setVisible(true);
 
         // Cliquer sur le bouton de connexion
-        new Conf().selectTataBase();
+        //new Conf().selectTataBase();
         connectionButton.doClick();
     }
 }

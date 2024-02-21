@@ -113,6 +113,22 @@ INSERT INTO `whitelist` (`id`, `email`, `store`, `role`) VALUES
 (3, 'manager@lidl.fr', 3, 'MANAGER'),
 (4, 'employee@lidl.fr', 3, 'EMPLOYEE');
 
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `reset_password`
+--
+
+DROP TABLE IF EXISTS reset_password;
+CREATE TABLE `reset_password` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `email` varchar(255) NOT NULL,
+  `token` varchar(255) NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+);
+
 --
 -- Index pour les tables déchargées
 --
