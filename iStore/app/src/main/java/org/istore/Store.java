@@ -229,7 +229,7 @@ public class Store {
                     new Store().updateStock(frame);
                     break;
                 case "Supprimer un article":
-                    // new Store().deleteItem(frame);
+                    new Store().deleteItem(frame);
                     break;
                 default:
                     break;
