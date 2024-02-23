@@ -1,7 +1,0 @@
-SQL JSON_ARRAY Function
-UPDATE users 
-SET store = JSON_ARRAY(
-    JSON_OBJECT('id', 1, 'role_name', 'responsable'),
-    JSON_OBJECT('id', 2, 'role_name', 'employee')
-)
-WHERE id = 1;
